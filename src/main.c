@@ -1,6 +1,9 @@
 #include <stdio.h>
 
+#include <SDL.h>
+
 int main(int argc, char *argv[]) {
-    printf("Hello World!\n");
-    return 0;
+  SDL_Init(SDL_INIT_EVERYTHING);
+  printf("Hello World!\n");
+  return 0;
 }
