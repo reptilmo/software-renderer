@@ -6,10 +6,11 @@ add_executable(renderer
 
 target_compile_options(renderer PRIVATE -Wall)
 
-target_include_directories(renderer SYSTEM
-  PRIVATE ${CMAKE_SOURCE_DIR}/3rd-party/SDL/include
+target_include_directories(renderer PUBLIC
+    ${CMAKE_SOURCE_DIR}/3rd-party/SDL/include
 )
 
 target_link_libraries(renderer PUBLIC
-    SDL3-static
+    SDL2-static
+    SDL2main
 )
