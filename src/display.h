@@ -6,6 +6,7 @@
 
 #include <SDL.h>
 
+
 typedef struct Display {
   SDL_Window* window;
   SDL_Renderer* renderer;

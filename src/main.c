@@ -4,6 +4,9 @@
 #include "display.h"
 #include "vec.h"
 
+#define FPS 60
+#define FRAME_TARGET_TIME (1000 / FPS)
+
 bool setup(void);
 void process_input(bool* running);
 void update(void);
@@ -20,6 +23,7 @@ Vec2 cube_projected[CUBE_POINTS];
 Vec3 cube_rotation = {.x = 0, .y = 0, .z = 0};
 Vec3 camera_position = {.x = 0, .y = 0, .z = -5};
 
+uint32_t previous_frame_time = 0;
 
 int main(int argc, char* argv[]) {
 
@@ -33,9 +37,18 @@ int main(int argc, char* argv[]) {
   }
 
   bool running = setup();
+  uint32_t wait_next_frame = 0;
 
   while (running) {
     process_input(&running);
+
+    wait_next_frame = FRAME_TARGET_TIME - (SDL_GetTicks() - previous_frame_time);
+
+    if (wait_next_frame > 0 && wait_next_frame <= FRAME_TARGET_TIME) {
+      SDL_Delay(wait_next_frame);
+    }
+    previous_frame_time = SDL_GetTicks();
+
     update();
     render();
   }
@@ -80,9 +93,9 @@ void process_input(bool* running) {
 }
 
 void update(void) {
-  cube_rotation.x += 0.001f;
-  cube_rotation.y += 0.001f;
-  cube_rotation.z += 0.001f;
+  cube_rotation.x += 0.01f;
+  cube_rotation.y += 0.01f;
+  cube_rotation.z += 0.01f;
 
   for (int i = 0; i < CUBE_POINTS; i++) {
     Vec3 p = cube[i];
