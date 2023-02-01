@@ -16,7 +16,10 @@ Display display = {0};
 
 Vec3 cube[CUBE_POINTS];
 Vec2 cube_projected[CUBE_POINTS];
+
+Vec3 cube_rotation = {.x = 0, .y = 0, .z = 0};
 Vec3 camera_position = {.x = 0, .y = 0, .z = -5};
+
 
 int main(int argc, char* argv[]) {
 
@@ -77,10 +80,17 @@ void process_input(bool* running) {
 }
 
 void update(void) {
+  cube_rotation.x += 0.001f;
+  cube_rotation.y += 0.001f;
+  cube_rotation.z += 0.001f;
 
   for (int i = 0; i < CUBE_POINTS; i++) {
     Vec3 p = cube[i];
-    p.z -= camera_position.z; // TODO:
+    p = rotate_around_x(p, cube_rotation.x);
+    p = rotate_around_y(p, cube_rotation.y);
+    p = rotate_around_z(p, cube_rotation.z);
+
+    p = sub(p, camera_position); // TODO:
 
     cube_projected[i] = project(p);
   }
