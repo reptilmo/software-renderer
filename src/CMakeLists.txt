@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 3.23)
 
 add_executable(renderer
+    vec.h
+    vec.c
     display.h
     display.c
     main.c
 )
 
-target_compile_options(renderer PRIVATE -Wall)
+target_compile_options(renderer PRIVATE /W4)
 
 target_include_directories(renderer PUBLIC
     ${CMAKE_SOURCE_DIR}/3rd-party/SDL/include
