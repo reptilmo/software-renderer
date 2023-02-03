@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.23)
 
 add_executable(renderer
+    darray.h
+    darray.c
     vec.h
     vec.c
     mesh.h

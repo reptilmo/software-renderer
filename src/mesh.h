@@ -9,8 +9,19 @@ typedef struct Triangle {
   int c;
 } Triangle;
 
-#define NUM_MESH_VERTICES 8
-#define NUM_MESH_TRIANGLES 12
+typedef struct ProjectedTriangle {
+  Vec2 a;
+  Vec2 b;
+  Vec2 c;
+} ProjectedTriangle;
 
-extern Vec3 mesh_vertices[NUM_MESH_VERTICES];
-extern Triangle mesh_triangles[NUM_MESH_TRIANGLES];
+typedef struct Mesh {
+  Vec3* vertices;
+  Triangle* triangles;
+} Mesh;
+
+Mesh* init_mesh();
+size_t get_mesh_vertex_count(Mesh* mesh);
+size_t get_mesh_triangle_count(Mesh* mesh);
+
+void load_cube_mesh(Mesh* mesh);

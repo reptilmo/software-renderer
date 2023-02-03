@@ -1,9 +1,11 @@
 // main.c
 #include <stdio.h>
+#include <assert.h>
 
 #include "display.h"
 #include "vec.h"
 #include "mesh.h"
+#include "darray.h"
 
 #define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
@@ -15,11 +17,11 @@ void render(void);
 Vec2 project(Vec3 point);
 
 Display display = {0};
+const Vec3 camera_position = {.x = 0, .y = 0, .z = -5};
 
-Vec2 mesh_vertices_projected[NUM_MESH_VERTICES];
-
+Mesh* mesh = NULL;
 Vec3 mesh_rotation = {.x = 0, .y = 0, .z = 0};
-Vec3 camera_position = {.x = 0, .y = 0, .z = -5};
+Vec2* mesh_vertices_projected = NULL;
 
 uint32_t previous_frame_time = 0;
 
@@ -50,6 +52,7 @@ int main(int argc, char* argv[]) {
     render();
   }
 
+  dyn_array_free(mesh_vertices_projected);
   finalize_display(&display);
   SDL_Quit();
 
@@ -57,6 +60,11 @@ int main(int argc, char* argv[]) {
 }
 
 bool setup(void) {
+
+  mesh = init_mesh();
+  if (mesh != NULL) {
+    load_cube_mesh(mesh);
+  }
 
   return true;
 }
@@ -84,15 +92,18 @@ void update(void) {
   mesh_rotation.y += 0.01f;
   mesh_rotation.z += 0.01f;
 
-  for (int i = 0; i < NUM_MESH_VERTICES; i++) {
-    Vec3 p = mesh_vertices[i];
+  assert(mesh != NULL);
+  const size_t mesh_vertex_count = get_mesh_vertex_count(mesh);
+
+  for (int i = 0; i < mesh_vertex_count; i++) {
+    Vec3 p = mesh->vertices[i];
     p = rotate_around_x(p, mesh_rotation.x);
     p = rotate_around_y(p, mesh_rotation.y);
     p = rotate_around_z(p, mesh_rotation.z);
 
     p = sub(p, camera_position); // TODO:
 
-    mesh_vertices_projected[i] = project(p);
+    dyn_array_push_back(mesh_vertices_projected, project(p)); //FIXME:
   }
 }
 
@@ -100,13 +111,15 @@ void render(void) {
   clear_pixel_buffer(&display, 0xFF000000);
   draw_grid(&display, 10, 0xFF333333);
 
-  // draw_rect(&display, 50, 50, 20, 30, 0xFFFF0000);
-  // draw_rect(&display, 300, 200, 70, 40, 0xFFFFFF00);
+  assert(mesh != NULL);
+  const size_t mesh_triangle_count = get_mesh_triangle_count(mesh);
 
-  for (int i = 0; i < NUM_MESH_TRIANGLES; i++) {
-    Vec2 a = mesh_vertices_projected[mesh_triangles[i].a];
-    Vec2 b = mesh_vertices_projected[mesh_triangles[i].b];
-    Vec2 c = mesh_vertices_projected[mesh_triangles[i].c];
+  for (int i = 0; i < mesh_triangle_count; i++) {
+    const Triangle tri = mesh->triangles[i];
+
+    Vec2 a = mesh_vertices_projected[tri.a];
+    Vec2 b = mesh_vertices_projected[tri.b];
+    Vec2 c = mesh_vertices_projected[tri.c];
 
     //FIXME:
     a.x += display.width / 2;
@@ -125,5 +138,6 @@ void render(void) {
     draw_line_dda(&display, c.x, c.y, a.x, a.y, 0xFF00FF00);
   }
 
+  dyn_array_clear(mesh_vertices_projected);
   present_pixel_buffer(&display);
 }
