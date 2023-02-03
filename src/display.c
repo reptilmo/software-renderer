@@ -125,3 +125,22 @@ void draw_rect(Display* display, int left, int top, int width, int height, uint3
     }
   }
 }
+
+void draw_line_dda(Display* display, int x0, int y0, int x1, int y1, uint32_t color) {
+  int dx = x1 - x0;
+  int dy = y1 - y0;
+
+  int run_length = abs(dx) > abs(dy) ? abs(dx) : abs(dy);
+
+  float sx = dx / (float)run_length;
+  float sy = dy / (float)run_length;
+
+  float px = (float)x0;
+  float py = (float)y0;
+
+  for (int i = 0; i <= run_length; i++) {
+    display->pixel_buffer[display->width * (int)round(py) + (int)round(px)] = color;
+    px += sx;
+    py += sy;
+  }
+}

@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.23)
 add_executable(renderer
     vec.h
     vec.c
+    mesh.h
+    mesh.c
     display.h
     display.c
     main.c

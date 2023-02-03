@@ -20,3 +20,5 @@ Vec3 rotate_around_x(Vec3 v, float a);
 Vec3 rotate_around_y(Vec3 v, float a);
 Vec3 rotate_around_z(Vec3 v, float a);
 
+Vec2 project(Vec3 point);
+
