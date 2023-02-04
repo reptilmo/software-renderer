@@ -11,10 +11,10 @@
 #define FRAME_TARGET_TIME (1000 / FPS)
 
 bool setup(void);
+void teardown(void);
 void process_input(bool* running);
 void update(void);
 void render(void);
-Vec2 project(Vec3 point);
 
 Display display = {0};
 const Vec3 camera_position = {.x = 0, .y = 0, .z = -5};
@@ -52,7 +52,8 @@ int main(int argc, char* argv[]) {
     render();
   }
 
-  dyn_array_free(mesh_vertices_projected);
+  teardown();
+
   finalize_display(&display);
   SDL_Quit();
 
@@ -63,10 +64,24 @@ bool setup(void) {
 
   mesh = init_mesh();
   if (mesh != NULL) {
-    load_cube_mesh(mesh);
+    //FIXEME:
+    if (!load_obj_mesh(mesh, "E:\\software-renderer\\data\\monkey.obj")) {
+      return false;
+    }
   }
 
   return true;
+}
+
+void teardown(void) {
+
+  dyn_array_free(mesh_vertices_projected);
+
+  if (mesh != NULL) {
+    dyn_array_free(mesh->vertices);
+    dyn_array_free(mesh->triangles);
+    free(mesh);
+  }
 }
 
 void process_input(bool* running) {
@@ -88,9 +103,9 @@ void process_input(bool* running) {
 }
 
 void update(void) {
-  mesh_rotation.x += 0.01f;
+  //mesh_rotation.x += 0.01f;
   mesh_rotation.y += 0.01f;
-  mesh_rotation.z += 0.01f;
+  //mesh_rotation.z += 0.01f;
 
   assert(mesh != NULL);
   const size_t mesh_vertex_count = get_mesh_vertex_count(mesh);
@@ -129,9 +144,9 @@ void render(void) {
     c.x += display.width / 2;
     c.y += display.height / 2;
 
-    draw_rect(&display, a.x, a.y, 10, 10, 0xFFFFFF00);
-    draw_rect(&display, b.x, b.y, 10, 10, 0xFFFFFF00);
-    draw_rect(&display, c.x, c.y, 10, 10, 0xFFFFFF00);
+    draw_rect(&display, a.x, a.y, 6, 6, 0xFFFFFF00);
+    draw_rect(&display, b.x, b.y, 6, 6, 0xFFFFFF00);
+    draw_rect(&display, c.x, c.y, 6, 6, 0xFFFFFF00);
 
     draw_line_dda(&display, a.x, a.y, b.x, b.y, 0xFFFF0000);
     draw_line_dda(&display, b.x, b.y, c.x, c.y, 0xFF0000FF);

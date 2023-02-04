@@ -3,6 +3,8 @@
 #include "darray.h"
 
 #include <assert.h>
+#include <stdio.h>
+#include <string.h>
 
 #define NUM_CUBE_VERTICES 8
 #define NUM_CUBE_TRIANGLES 12
@@ -48,7 +50,7 @@ Mesh* init_mesh() {
   return mesh;
 }
 
-size_t get_mesh_vertex_count(Mesh* mesh) {
+size_t get_mesh_vertex_count(const Mesh* mesh) {
   assert(mesh != NULL);
   if (mesh != NULL) {
     return dyn_array_length(mesh->vertices);
@@ -56,7 +58,7 @@ size_t get_mesh_vertex_count(Mesh* mesh) {
   return 0;
 }
 
-size_t get_mesh_triangle_count(Mesh* mesh) {
+size_t get_mesh_triangle_count(const Mesh* mesh) {
   assert(mesh != NULL);
   if (mesh != NULL) {
     return dyn_array_length(mesh->triangles);
@@ -75,3 +77,51 @@ void load_cube_mesh(Mesh* mesh) {
     }
   }
 }
+
+bool load_obj_mesh(Mesh* mesh, const char* obj_file_path) {
+  FILE* mesh_file = fopen(obj_file_path, "r");
+  if (mesh_file == NULL) {
+    fprintf(stderr, "Failed to open %s!\n", obj_file_path);
+    return false;
+  }
+
+  char buf[256];
+
+  while (true) {
+    memset(buf, 0, sizeof(char) * 256);
+    if (fgets(buf, 256, mesh_file) == NULL) {
+      break;
+    }
+
+    if (strncmp(buf, "v ", 2) == 0) {
+      float f[3] = {0.0f};
+
+      if (sscanf(buf, "v %f %f %f\n", &f[0], &f[1], &f[2]) == 3) {
+        Vec3 v = {.x = f[0], .y = -f[1], .z = f[2]};
+        dyn_array_push_back(mesh->vertices, v);
+      }
+    } else if (strncmp(buf, "f ", 2) == 0) {
+      int vertex_idx[3] = {0};
+      int texture_idx[3] = {0};
+      int normal_idx[3] = {0};
+
+      if (sscanf(buf, "f %i/%i/%i\t%i/%i/%i\t%i/%i/%i\n",
+        &vertex_idx[0], &texture_idx[0], &normal_idx[0],
+        &vertex_idx[1], &texture_idx[1], &normal_idx[1],
+        &vertex_idx[2], &texture_idx[2], &normal_idx[2]) == 9) {
+
+        Triangle tri = {
+          .a = vertex_idx[0] - 1,
+          .b = vertex_idx[1] - 1,
+          .c = vertex_idx[2] - 1,
+        };
+
+        dyn_array_push_back(mesh->triangles, tri);
+      }
+    }
+  }
+
+  fclose(mesh_file);
+  return true;
+}
+
