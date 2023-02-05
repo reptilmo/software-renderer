@@ -116,9 +116,9 @@ void update(void) {
     p = rotate_around_y(p, mesh_rotation.y);
     p = rotate_around_z(p, mesh_rotation.z);
 
-    p = sub(p, camera_position); // TODO:
+    p = vec3_sub(p, camera_position);
 
-    dyn_array_push_back(mesh_vertices_projected, project(p)); //FIXME:
+    dyn_array_push_back(mesh_vertices_projected, project(p));
   }
 }
 
