@@ -6,6 +6,7 @@
 #include "vec.h"
 #include "mesh.h"
 #include "darray.h"
+#include "renderer.h"
 
 #define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
@@ -17,11 +18,16 @@ void update(void);
 void render(void);
 
 Display display = {0};
-const Vec3 camera_position = {.x = 0, .y = 0, .z = -5};
+Renderer* renderer = NULL;
+const Vec3 camera_position = {.x = 0, .y = 0, .z = 0};
+bool enable_backface_culling = false;
 
 Mesh* mesh = NULL;
 Vec3 mesh_rotation = {.x = 0, .y = 0, .z = 0};
-Vec2* mesh_vertices_projected = NULL;
+Vec3* mesh_normals = NULL;
+
+Vec3* transformed_mesh_vertices = NULL;
+Vec3* transformed_mesh_normals = NULL;
 
 uint32_t previous_frame_time = 0;
 
@@ -65,9 +71,20 @@ bool setup(void) {
   mesh = init_mesh();
   if (mesh != NULL) {
     //FIXEME:
-    if (!load_obj_mesh(mesh, "E:\\software-renderer\\data\\monkey.obj")) {
+    load_cube_mesh(mesh);
+    /*if (!load_obj_mesh(mesh, "E:\\software-renderer\\data\\torus.obj")) {
       return false;
-    }
+    }*/
+  } else {
+    return false;
+  }
+
+  renderer = init_renderer(&display);
+  if (renderer != NULL) {
+    renderer_camera_position(renderer, camera_position);
+    renderer_clear_color(renderer, 0xFF000000);
+  } else {
+    return false;
   }
 
   return true;
@@ -75,7 +92,10 @@ bool setup(void) {
 
 void teardown(void) {
 
-  dyn_array_free(mesh_vertices_projected);
+  destroy_renderer(renderer);
+  renderer = NULL;
+
+  dyn_array_free(transformed_mesh_vertices);
 
   if (mesh != NULL) {
     dyn_array_free(mesh->vertices);
@@ -92,9 +112,16 @@ void process_input(bool* running) {
   case SDL_QUIT:
     *running = false;
     break;
-  case SDL_KEYDOWN:
+  case SDL_KEYUP:
     if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
       *running = false;
+    } else if (event.key.keysym.scancode == SDL_SCANCODE_TAB) {
+      if (enable_backface_culling) {
+        enable_backface_culling = false;
+      } else {
+        enable_backface_culling = true;
+      }
+      renderer_backface_culling(renderer, enable_backface_culling);
     }
     break;
   default:
@@ -103,56 +130,53 @@ void process_input(bool* running) {
 }
 
 void update(void) {
-  //mesh_rotation.x += 0.01f;
+  mesh_rotation.x += 0.01f;
   mesh_rotation.y += 0.01f;
-  //mesh_rotation.z += 0.01f;
+  mesh_rotation.z += 0.01f;
 
   assert(mesh != NULL);
   const size_t mesh_vertex_count = get_mesh_vertex_count(mesh);
+  const size_t mesh_normal_count = get_mesh_normal_count(mesh);
+
+  dyn_array_clear(transformed_mesh_vertices);
 
   for (int i = 0; i < mesh_vertex_count; i++) {
-    Vec3 p = mesh->vertices[i];
-    p = rotate_around_x(p, mesh_rotation.x);
-    p = rotate_around_y(p, mesh_rotation.y);
-    p = rotate_around_z(p, mesh_rotation.z);
+    Vec3 vertex = mesh->vertices[i];
+    vertex = rotate_around_x(vertex, mesh_rotation.x);
+    vertex = rotate_around_y(vertex, mesh_rotation.y);
+    vertex = rotate_around_z(vertex, mesh_rotation.z);
+    vertex.z += 5.0f;
 
-    p = vec3_sub(p, camera_position);
+    dyn_array_push_back(transformed_mesh_vertices, vertex);
+  }
 
-    dyn_array_push_back(mesh_vertices_projected, project(p));
+  dyn_array_clear(transformed_mesh_normals);
+
+  for (int i = 0; i < mesh_normal_count; i++) {
+    Vec3 normal = mesh->normals[i];
+    normal = rotate_around_x(normal, mesh_rotation.x);
+    normal = rotate_around_y(normal, mesh_rotation.y);
+    normal = rotate_around_z(normal, mesh_rotation.z);
+
+    dyn_array_push_back(transformed_mesh_normals, normal);
   }
 }
 
 void render(void) {
-  clear_pixel_buffer(&display, 0xFF000000);
-  draw_grid(&display, 10, 0xFF333333);
+  assert(renderer != NULL);
 
-  assert(mesh != NULL);
-  const size_t mesh_triangle_count = get_mesh_triangle_count(mesh);
+  renderer_begin_frame(renderer);
 
-  for (int i = 0; i < mesh_triangle_count; i++) {
-    const Triangle tri = mesh->triangles[i];
+  renderer_begin_triangles(
+    renderer,
+    mesh->triangles,
+    dyn_array_length(mesh->triangles),
+    transformed_mesh_vertices,
+    dyn_array_length(transformed_mesh_vertices),
+    transformed_mesh_normals,
+    dyn_array_length(transformed_mesh_normals)
+  );
 
-    Vec2 a = mesh_vertices_projected[tri.a];
-    Vec2 b = mesh_vertices_projected[tri.b];
-    Vec2 c = mesh_vertices_projected[tri.c];
-
-    //FIXME:
-    a.x += display.width / 2;
-    a.y += display.height / 2;
-    b.x += display.width / 2;
-    b.y += display.height / 2;
-    c.x += display.width / 2;
-    c.y += display.height / 2;
-
-    draw_rect(&display, a.x, a.y, 6, 6, 0xFFFFFF00);
-    draw_rect(&display, b.x, b.y, 6, 6, 0xFFFFFF00);
-    draw_rect(&display, c.x, c.y, 6, 6, 0xFFFFFF00);
-
-    draw_line_dda(&display, a.x, a.y, b.x, b.y, 0xFFFF0000);
-    draw_line_dda(&display, b.x, b.y, c.x, c.y, 0xFF0000FF);
-    draw_line_dda(&display, c.x, c.y, a.x, a.y, 0xFF00FF00);
-  }
-
-  dyn_array_clear(mesh_vertices_projected);
-  present_pixel_buffer(&display);
+  renderer_end_triangles(renderer);
+  renderer_end_frame(renderer);
 }

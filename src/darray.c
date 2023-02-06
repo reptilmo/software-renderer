@@ -37,7 +37,6 @@ size_t dyn_array_length(void* array) {
 }
 
 size_t dyn_array_clear(void* array) {
-  assert(array != NULL);
   if (array != NULL) {
     ARRAY_LENGTH(array) = 0;
     return ARRAY_CAPACITY(array);
@@ -46,7 +45,6 @@ size_t dyn_array_clear(void* array) {
 }
 
 void dyn_array_free(void* array) {
-  assert(array != NULL);
   if (array != NULL) {
     free(RAW_ARRAY(array));
   }

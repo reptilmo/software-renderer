@@ -9,6 +9,8 @@ add_executable(renderer
     mesh.c
     display.h
     display.c
+    renderer.h
+    renderer.c
     main.c
 )
 

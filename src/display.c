@@ -139,7 +139,7 @@ void draw_line_dda(Display* display, int x0, int y0, int x1, int y1, uint32_t co
   float py = (float)y0;
 
   for (int i = 0; i <= run_length; i++) {
-    display->pixel_buffer[display->width * (int)round(py) + (int)round(px)] = color;
+    display->pixel_buffer[display->width * (int)round(py) + (int)round(px)] = color; //FIXME: Clip to back buffer!
     px += sx;
     py += sy;
   }
