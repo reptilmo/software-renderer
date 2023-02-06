@@ -71,10 +71,10 @@ bool setup(void) {
   mesh = init_mesh();
   if (mesh != NULL) {
     //FIXEME:
-    load_cube_mesh(mesh);
-    /*if (!load_obj_mesh(mesh, "E:\\software-renderer\\data\\torus.obj")) {
+    //load_cube_mesh(mesh);
+    if (!load_obj_mesh(mesh, "E:\\software-renderer\\data\\cube.obj")) {
       return false;
-    }*/
+    }
   } else {
     return false;
   }

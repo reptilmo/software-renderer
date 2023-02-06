@@ -96,28 +96,37 @@ float vec3_dot(Vec3 a, Vec3 b) {
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-Vec3 rotate_around_x(Vec3 v, float angle) {
+Vec3 rotate_around_x(Vec3 v, float a) {
+  const float cos_a = cosf(a);
+  const float sin_a = sinf(a);
+
   Vec3 rotated = {
     .x = v.x,
-    .y = v.y * cosf(angle) - v.z * sinf(angle),
-    .z = v.z * cosf(angle) + v.y * sinf(angle),
+    .y = v.y * cos_a - v.z * sin_a,
+    .z = v.z * cos_a + v.y * sin_a,
   };
   return rotated;
 }
 
-Vec3 rotate_around_y(Vec3 v, float angle) {
+Vec3 rotate_around_y(Vec3 v, float a) {
+  const float cos_a = cosf(a);
+  const float sin_a = sinf(a);
+
   Vec3 rotated = {
-    .x = v.x * cosf(angle) - v.z * sinf(angle),
+    .x = v.x * cos_a - v.z * sin_a,
     .y = v.y,
-    .z = v.z * cosf(angle) + v.x * sinf(angle),
+    .z = v.z * cos_a + v.x * sin_a,
   };
   return rotated;
 }
 
-Vec3 rotate_around_z(Vec3 v, float angle) {
+Vec3 rotate_around_z(Vec3 v, float a) {
+  const float cos_a = cosf(a);
+  const float sin_a = sinf(a);
+
   Vec3 rotated = {
-    .x = v.x * cosf(angle) - v.y * sinf(angle),
-    .y = v.y * cosf(angle) + v.x * sinf(angle),
+    .x = v.x * cos_a - v.y * sin_a,
+    .y = v.y * cos_a + v.x * sin_a,
     .z = v.z,
   };
   return rotated;
