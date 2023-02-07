@@ -43,6 +43,17 @@ float vec2_dot(Vec2 a, Vec2 b) {
   return a.x * b.x + a.y * b.y;
 }
 
+
+Vec2 vec2_normalize(Vec2 v) {
+  const float factor = 1.0f / vec2_len(v);
+  Vec2 result = {
+      .x = v.x * factor,
+      .y = v.y * factor,
+  };
+  return result;
+}
+
+
 Vec3 vec3_add(Vec3 a, Vec3 b) {
   Vec3 result = {
     .x = a.x + b.x,
@@ -94,6 +105,16 @@ Vec3 vec3_cross(Vec3 a, Vec3 b) {
 
 float vec3_dot(Vec3 a, Vec3 b) {
   return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+Vec3 vec3_normalize(Vec3 v) {
+  const float factor = 1.0f / vec3_len(v);
+  Vec3 result = {
+      .x = v.x * factor,
+      .y = v.y * factor,
+      .z = v.z * factor,
+  };
+  return result;
 }
 
 Vec3 rotate_around_x(Vec3 v, float a) {

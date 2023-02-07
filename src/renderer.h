@@ -10,21 +10,34 @@ typedef struct Triangle {
   uint32_t color;
 } Triangle;
 
+typedef enum CullMode {
+  CULL_MODE_NONE = 0,
+  CULL_MODE_BACKFACE = 1,
+} CullMode;
+
+typedef enum DrawMode {
+  DRAW_MODE_TRIANGLE_FILL = 0b00000001u,
+  DRAW_MODE_TRIANGLE_WIRE = 0b00000010u,
+  DRAW_MODE_POINTS =        0b00000100u,
+} DrawMode;
+
 typedef struct Renderer {
   Display* display;
   Triangle* renderable_triangles;
   Vec3 camera_position;
   uint32_t clear_color;
+  DrawMode draw_mode;
+  CullMode cull_mode;
   int display_half_width;
   int display_half_height;
-  bool cull_backface;
 } Renderer;
 
 Renderer* init_renderer(Display* display);
 void destroy_renderer(Renderer* renderer);
 
-void renderer_backface_culling(Renderer* renderer, bool cull_backface);
-void renderer_camera_position(Renderer* renderer, Vec3 postion);
+void renderer_cull_mode(Renderer* renderer, CullMode cull_mode);
+void renderer_draw_mode(Renderer* renderer, DrawMode draw_mode);
+void renderer_camera_position(Renderer* renderer, Vec3 position);
 void renderer_clear_color(Renderer* renderer, uint32_t color);
 
 void renderer_begin_frame(Renderer* renderer);

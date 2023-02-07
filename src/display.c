@@ -139,8 +139,96 @@ void draw_line_dda(Display* display, int x0, int y0, int x1, int y1, uint32_t co
   float py = (float)y0;
 
   for (int i = 0; i <= run_length; i++) {
-    display->pixel_buffer[display->width * (int)round(py) + (int)round(px)] = color; //FIXME: Clip to back buffer!
+    display->pixel_buffer[display->width * (int)round(py) + (int)round(px)] = color; //FIXME: Clip to back buffer dimentions!
     px += sx;
     py += sy;
   }
 }
+
+inline void swap_int(int* a, int* b) {
+  int tmp = *b;
+  *b = *a;
+  *a = tmp;
+}
+
+static void draw_scanline(Display* display, int x0, int x1, int y, uint32_t color) {
+  if (y >= display->height) {
+    return;
+  }
+
+  if (x0 > x1) {
+    swap_int(&x0, &x1);
+  }
+
+  if (x0 < 0) {
+    x0 = 0;
+  }
+
+  if (x1 >= display->width) {
+    x1 = display->width - 1;
+  }
+
+  y = display->width * y;
+
+  for (int x = x0; x <= x1; x++) {
+    display->pixel_buffer[y + x] = color;
+  }
+}
+
+static void draw_flat_bottom_triangle(Display* display, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
+  const float inv_slope_left = (x1 - x0) / (float)(y1 - y0);
+  const float inv_slope_right = (x2 - x0) / (float)(y2 - y0);
+  float scanline_start = (float)x0;
+  float scanline_end = (float)x0;
+
+  for (int y = y0; y <= y2; y++) {
+    draw_scanline(display, (int)round(scanline_start), (int)round(scanline_end), y, color);
+    scanline_start += inv_slope_left;
+    scanline_end += inv_slope_right;
+  }
+}
+
+static void draw_flat_top_triangle(Display* display, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
+  const float inv_slope_left = (x2 - x0) / (float)(y2 - y0);
+  const float inv_slope_right = (x2 - x1) / (float)(y2 - y1);
+  float scanline_start = (float)x2;
+  float scanline_end = (float)x2;
+
+  for (int y = y2; y >= y0; y--) {
+    draw_scanline(display, (int)round(scanline_start), (int)round(scanline_end), y, color);
+    scanline_start -= inv_slope_left;
+    scanline_end -= inv_slope_right;
+  }
+}
+
+void draw_triangle(Display* display, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
+
+  if (y0 > y1) {
+    swap_int(&y0, &y1);
+    swap_int(&x0, &x1);
+  }
+
+  if (y1 > y2) {
+    swap_int(&y1, &y2);
+    swap_int(&x1, &x2);
+  }
+
+  if (y0 > y1) {
+    swap_int(&y0, &y1);
+    swap_int(&x0, &x1);
+  }
+
+  if (y1 == y2) {
+    draw_flat_bottom_triangle(display, x0, y0, x1, y1, x2, y2, color);
+  } else if (y0 == y1) {
+    draw_flat_top_triangle(display, x0, y0, x1, y1, x2, y2, color);
+  } else {
+    const int ym = y1;
+    const int xm = (y1 - y0) * (x2 - x0) / (float)(y2 - y0) + x0;
+
+    draw_flat_bottom_triangle(display, x0, y0, x1, y1, xm, ym, color);
+    draw_flat_top_triangle(display, xm, ym, x1, y1, x2, y2, color);
+  }
+}
+
+

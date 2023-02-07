@@ -21,6 +21,7 @@ Display display = {0};
 Renderer* renderer = NULL;
 const Vec3 camera_position = {.x = 0, .y = 0, .z = 0};
 bool enable_backface_culling = false;
+DrawMode draw_mode = DRAW_MODE_TRIANGLE_FILL;
 
 Mesh* mesh = NULL;
 Vec3 mesh_rotation = {.x = 0, .y = 0, .z = 0};
@@ -121,7 +122,18 @@ void process_input(bool* running) {
       } else {
         enable_backface_culling = true;
       }
-      renderer_backface_culling(renderer, enable_backface_culling);
+      renderer_cull_mode(renderer,
+        enable_backface_culling ?
+        CULL_MODE_BACKFACE : CULL_MODE_NONE);
+    } else if (event.key.keysym.scancode == SDL_SCANCODE_1) {
+      draw_mode ^= DRAW_MODE_TRIANGLE_FILL;
+      renderer_draw_mode(renderer, draw_mode);
+    } else if (event.key.keysym.scancode == SDL_SCANCODE_2) {
+      draw_mode ^= DRAW_MODE_TRIANGLE_WIRE;
+      renderer_draw_mode(renderer, draw_mode);
+    } else if (event.key.keysym.scancode == SDL_SCANCODE_3) {
+      draw_mode ^= DRAW_MODE_POINTS;
+      renderer_draw_mode(renderer, draw_mode);
     }
     break;
   default:
@@ -178,5 +190,6 @@ void render(void) {
   );
 
   renderer_end_triangles(renderer);
+
   renderer_end_frame(renderer);
 }

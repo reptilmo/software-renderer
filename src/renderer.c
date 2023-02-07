@@ -11,13 +11,14 @@ Renderer* init_renderer(Display* display) {
     if (renderer != NULL) {
       renderer->display = display;
       renderer->renderable_triangles = NULL;
-      renderer->cull_backface = false;
       renderer->display_half_width = display->width / 2;
       renderer->display_half_height = display->height / 2;
       renderer->camera_position.x = 0.0f;
       renderer->camera_position.y = 0.0f;
       renderer->camera_position.z = 0.0f;
       renderer->clear_color = 0xFF000000;
+      renderer->draw_mode = DRAW_MODE_TRIANGLE_FILL;
+      renderer->cull_mode = CULL_MODE_NONE;
 
       return renderer;
     }
@@ -34,10 +35,17 @@ void destroy_renderer(Renderer* renderer) {
   }
 }
 
-void renderer_backface_culling(Renderer* renderer, bool cull_backface) {
+void renderer_cull_mode(Renderer* renderer, CullMode cull_mode) {
   assert(renderer != NULL);
   if (renderer != NULL) {
-    renderer->cull_backface = cull_backface;
+    renderer->cull_mode = cull_mode;
+  }
+}
+
+void renderer_draw_mode(Renderer* renderer, DrawMode draw_mode) {
+  assert(renderer != NULL);
+  if (renderer != NULL) {
+    renderer->draw_mode ^= draw_mode;
   }
 }
 
@@ -87,7 +95,7 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
         .color = face.color,
     };
     
-    if (renderer->cull_backface) {
+    if (renderer->cull_mode == CULL_MODE_BACKFACE) {
       //const Vec3 triangle_normal = vec3_cross(vec3_sub(triangle.b, triangle.a), vec3_sub(triangle.c, triangle.a));
 
       assert(face.normal < num_normals);
@@ -118,13 +126,21 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
     c.x += renderer->display_half_width;
     c.y += renderer->display_half_height;
 
-    draw_rect(renderer->display, a.x, a.y, 6, 6, 0xFFFFFF00);
-    draw_rect(renderer->display, b.x, b.y, 6, 6, 0xFFFFFF00);
-    draw_rect(renderer->display, c.x, c.y, 6, 6, 0xFFFFFF00);
+    if (renderer->draw_mode & DRAW_MODE_TRIANGLE_FILL) {
+      draw_triangle(renderer->display, a.x, a.y, b.x, b.y, c.x, c.y, triangle.color);
+    }
 
-    draw_line_dda(renderer->display, a.x, a.y, b.x, b.y, triangle.color);
-    draw_line_dda(renderer->display, b.x, b.y, c.x, c.y, triangle.color);
-    draw_line_dda(renderer->display, c.x, c.y, a.x, a.y, triangle.color);
+    if (renderer->draw_mode & DRAW_MODE_TRIANGLE_WIRE) {
+      draw_line_dda(renderer->display, a.x, a.y, b.x, b.y, 0xFFFFFFFF);
+      draw_line_dda(renderer->display, b.x, b.y, c.x, c.y, 0xFFFFFFFF);
+      draw_line_dda(renderer->display, c.x, c.y, a.x, a.y, 0xFFFFFFFF);
+    }
+
+    if (renderer->draw_mode & DRAW_MODE_POINTS) {
+      draw_rect(renderer->display, a.x, a.y, 6, 6, 0xFFFFFF00);
+      draw_rect(renderer->display, b.x, b.y, 6, 6, 0xFFFFFF00);
+      draw_rect(renderer->display, c.x, c.y, 6, 6, 0xFFFFFF00);
+    }
   }
 }
 
