@@ -45,7 +45,7 @@ void renderer_cull_mode(Renderer* renderer, CullMode cull_mode) {
 void renderer_draw_mode(Renderer* renderer, DrawMode draw_mode) {
   assert(renderer != NULL);
   if (renderer != NULL) {
-    renderer->draw_mode ^= draw_mode;
+    renderer->draw_mode = draw_mode;
   }
 }
 

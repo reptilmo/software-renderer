@@ -6,7 +6,6 @@
 
 #include <SDL.h>
 
-
 typedef struct Display {
   SDL_Window* window;
   SDL_Renderer* renderer;
@@ -17,8 +16,8 @@ typedef struct Display {
   bool fullscreen;
 } Display;
 
-bool initialize_display(Display* display, int width, int height, bool fullscreen);
-void finalize_display(Display* display);
+Display* init_display(int width, int height, bool fullscreen);
+void destroy_display(Display* display);
 
 void clear_pixel_buffer(Display* display, uint32_t color);
 void present_pixel_buffer(Display* display);

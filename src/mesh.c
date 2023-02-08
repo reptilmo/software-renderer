@@ -52,13 +52,22 @@ static TriangleFace cube_triangles[NUM_CUBE_TRIANGLES] = {
 
 Mesh* init_mesh() {
   Mesh* mesh = (Mesh*)malloc(sizeof(Mesh));
-  assert(mesh != NULL);
   if (mesh != NULL) {
     mesh->vertices = NULL;
     mesh->normals = NULL;
     mesh->triangles = NULL;
   }
   return mesh;
+}
+
+void destroy_mesh(Mesh* mesh) {
+  if (mesh != NULL) {
+    dyn_array_free(mesh->vertices);
+    dyn_array_free(mesh->normals);
+    dyn_array_free(mesh->triangles);
+
+    free(mesh);
+  }
 }
 
 size_t get_mesh_vertex_count(const Mesh* mesh) {
@@ -85,22 +94,31 @@ size_t get_mesh_triangle_count(const Mesh* mesh) {
   return 0;
 }
 
-void load_cube_mesh(Mesh* mesh) {
+bool load_cube_mesh(Mesh* mesh) {
   assert(mesh != NULL);
-  if (mesh != NULL) {
-    for (int i = 0; i < NUM_CUBE_VERTICES; i++) {
-      dyn_array_push_back(mesh->vertices, cube_vertices[i]);
-    }
-    for (int i = 0; i < NUM_CUBE_NORMALS; i++) {
-      dyn_array_push_back(mesh->normals, cube_normals[i]);
-    }
-    for (int i = 0; i < NUM_CUBE_TRIANGLES; i++) {
-      dyn_array_push_back(mesh->triangles, cube_triangles[i]);
-    }
+  if (mesh == NULL) {
+    return false;
   }
+
+  for (int i = 0; i < NUM_CUBE_VERTICES; i++) {
+    dyn_array_push_back(mesh->vertices, cube_vertices[i]);
+  }
+  for (int i = 0; i < NUM_CUBE_NORMALS; i++) {
+    dyn_array_push_back(mesh->normals, cube_normals[i]);
+  }
+  for (int i = 0; i < NUM_CUBE_TRIANGLES; i++) {
+    dyn_array_push_back(mesh->triangles, cube_triangles[i]);
+  }
+
+  return true;
 }
 
 bool load_obj_mesh(Mesh* mesh, const char* obj_file_path) {
+  assert(mesh != NULL);
+  if (mesh == NULL) {
+    return false;
+  }
+
   FILE* mesh_file = fopen(obj_file_path, "r");
   if (mesh_file == NULL) {
     fprintf(stderr, "Failed to open %s!\n", obj_file_path);

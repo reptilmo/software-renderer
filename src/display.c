@@ -4,31 +4,45 @@
 #include <assert.h>
 #include <stdio.h>
 
-bool initialize_display(Display* display, int width, int height, bool fullscreen) {
-  assert(display != NULL);
+
+Display* init_display(int width, int height, bool fullscreen) {
+
+  Display* display = (Display*)malloc(sizeof(Display));
+  if (display == NULL) {
+    fprintf(stderr, "Error display malloc!\n");
+    return NULL;
+  }
+
   display->width = width;
   display->height = height;
   display->fullscreen = fullscreen;
 
   display->window = SDL_CreateWindow(
-      "Software Renderer", // NULL,
-      SDL_WINDOWPOS_CENTERED,
-      SDL_WINDOWPOS_CENTERED,
-      width,
-      height,
-      0 // SDL_WINDOW_BORDERLESS
+    "Software Renderer", // NULL,
+    SDL_WINDOWPOS_CENTERED,
+    SDL_WINDOWPOS_CENTERED,
+    display->width,
+    display->height,
+    display->fullscreen ? SDL_WINDOW_BORDERLESS : 0
   );
 
   if (display->window == NULL) {
     fprintf(stderr, "Error in SDL create window!\n");
-    return false;
+    destroy_display(display);
+    return NULL;
+  }
+
+  if (display->fullscreen) {
+    if (SDL_SetWindowFullscreen(display->window, SDL_WINDOW_FULLSCREEN) != 0) {
+      fprintf(stderr, "Error SDL failed to set fullscreen window!\n");
+    }
   }
 
   display->renderer = SDL_CreateRenderer(display->window, -1, 0);
-
   if (display->renderer == NULL) {
     fprintf(stderr, "Error in SDL create renderer!\n");
-    return false;
+    destroy_display(display);
+    return NULL;
   }
 
   display->pixel_buffer_texture = SDL_CreateTexture(
@@ -40,33 +54,40 @@ bool initialize_display(Display* display, int width, int height, bool fullscreen
 
   if (display->pixel_buffer_texture == NULL) {
     fprintf(stderr, "Error in SDL create pixel buffer texture!\n");
-    return false;
+    destroy_display(display);
+    return NULL;
   }
 
   display->pixel_buffer = (uint32_t*)malloc(sizeof(uint32_t) * display->width * display->height);
   if (display->pixel_buffer == NULL) {
     fprintf(stderr, "Failed to allocate pixel buffer!\n");
-    return false;
+    destroy_display(display);
+    return NULL;
   }
 
-  return true;
+  return display;
 }
 
-void finalize_display(Display* display) {
-  if (display->pixel_buffer != NULL) {
-    free(display->pixel_buffer);
-  }
+void destroy_display(Display* display) {
+  assert(display != NULL);
+  if (display != NULL) {
+    if (display->pixel_buffer != NULL) {
+      free(display->pixel_buffer);
+    }
 
-  if (display->pixel_buffer_texture != NULL) {
-    SDL_DestroyTexture(display->pixel_buffer_texture);
-  }
+    if (display->pixel_buffer_texture != NULL) {
+      SDL_DestroyTexture(display->pixel_buffer_texture);
+    }
 
-  if (display->renderer != NULL) {
-    SDL_DestroyRenderer(display->renderer);
-  }
+    if (display->renderer != NULL) {
+      SDL_DestroyRenderer(display->renderer);
+    }
 
-  if (display->window != NULL) {
-    SDL_DestroyWindow(display->window);
+    if (display->window != NULL) {
+      SDL_DestroyWindow(display->window);
+    }
+
+    free(display);
   }
 }
 

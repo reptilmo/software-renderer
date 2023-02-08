@@ -19,9 +19,11 @@ typedef struct Mesh {
 } Mesh;
 
 Mesh* init_mesh();
+void destroy_mesh(Mesh* mesh);
+
 size_t get_mesh_vertex_count(const Mesh* mesh);
 size_t get_mesh_normal_count(const Mesh* mesh);
 size_t get_mesh_triangle_count(const Mesh* mesh);
 
-void load_cube_mesh(Mesh* mesh);
+bool load_cube_mesh(Mesh* mesh);
 bool load_obj_mesh(Mesh* mesh, const char* obj_file_path);
