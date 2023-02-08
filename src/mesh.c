@@ -31,23 +31,23 @@ static Vec3 cube_normals[NUM_CUBE_NORMALS] = {
 };
 
 static TriangleFace cube_triangles[NUM_CUBE_TRIANGLES] = {
-    {.a = 1, .b = 3, .c = 0, .normal = 0, .color = 0xFFFFFFFF}, // Front
-    {.a = 3, .b = 1, .c = 2, .normal = 0, .color = 0xFFFFFFFF},
+    {.a = 1, .b = 3, .c = 0, .normal = 0, .color = 0xFFFF2222}, // Front
+    {.a = 3, .b = 1, .c = 2, .normal = 0, .color = 0xFFFF2222},
 
-    {.a = 3, .b = 2, .c = 4, .normal = 1, .color = 0xFFFF00FF}, // Right
-    {.a = 4, .b = 5, .c = 3, .normal = 1, .color = 0xFFFF0000},
+    {.a = 3, .b = 2, .c = 4, .normal = 1, .color = 0xFFFF11FF}, // Right
+    {.a = 4, .b = 5, .c = 3, .normal = 1, .color = 0xFFFF11FF},
 
-    {.a = 4, .b = 6, .c = 5, .normal = 2, .color = 0xFFFFFFFF}, // Back
-    {.a = 6, .b = 7, .c = 5, .normal = 2, .color = 0xFFFFFFFF},
+    {.a = 4, .b = 6, .c = 5, .normal = 2, .color = 0xFF1111FF}, // Back
+    {.a = 6, .b = 7, .c = 5, .normal = 2, .color = 0xFF1111FF},
 
-    {.a = 0, .b = 7, .c = 1, .normal = 3, .color = 0xFFFFFFFF}, // Left
-    {.a = 6, .b = 1, .c = 7, .normal = 3, .color = 0xFFFFFFFF},
+    {.a = 0, .b = 7, .c = 1, .normal = 3, .color = 0xFF11FF11}, // Left
+    {.a = 6, .b = 1, .c = 7, .normal = 3, .color = 0xFF11FF11},
 
-    {.a = 6, .b = 2, .c = 1, .normal = 4, .color = 0xFFFF0000}, // Top
-    {.a = 2, .b = 6, .c = 4, .normal = 4, .color = 0xFF00FF00},
+    {.a = 6, .b = 2, .c = 1, .normal = 4, .color = 0xFF2211EE}, // Top
+    {.a = 2, .b = 6, .c = 4, .normal = 4, .color = 0xFF2211EE},
 
-    {.a = 0, .b = 5, .c = 7, .normal = 5, .color = 0xFF00FF00}, // Bottom
-    {.a = 0, .b = 3, .c = 5, .normal = 5, .color = 0xFF00FF00},
+    {.a = 0, .b = 5, .c = 7, .normal = 5, .color = 0xFFEEFF00}, // Bottom
+    {.a = 0, .b = 3, .c = 5, .normal = 5, .color = 0xFFEEFF00},
 };
 
 Mesh* init_mesh() {

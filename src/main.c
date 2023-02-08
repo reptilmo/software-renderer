@@ -14,7 +14,7 @@
 #define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
 
-void process_command_line(int argc, char* argv[], int* width, int* height, bool* fullscreen);
+const char* process_command_line(int argc, char* argv[], int* width, int* height, bool* fullscreen);
 void process_input(bool* running);
 void update(void);
 void render(void);
@@ -41,8 +41,7 @@ int main(int argc, char* argv[]) {
   int width = 800;
   int height = 600;
   bool fullscreen = false;
-
-  process_command_line(argc, argv, &width, &height, &fullscreen);
+  const char* mesh_file = process_command_line(argc, argv, &width, &height, &fullscreen);
 
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
     fprintf(stderr, "Error from SDL init!\n");
@@ -75,23 +74,24 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  // FIXEME:
-  // if (load_cube_mesh(mesh)) {
-  if (load_obj_mesh(mesh, "E:\\software-renderer\\data\\torus.obj")) {
-    bool running = true;
+  bool running = false;
+  if (mesh_file != NULL) {
+    running = load_obj_mesh(mesh, mesh_file);
+  } else {
+    running = load_cube_mesh(mesh);
+  }
 
-    while (running) {
-      process_input(&running);
+  while (running) {
+    process_input(&running);
 
-      int wait_next_frame = FRAME_TARGET_TIME - (SDL_GetTicks() - previous_frame_time);
-      if (wait_next_frame > 0 && wait_next_frame <= FRAME_TARGET_TIME) {
-        SDL_Delay((uint32_t)wait_next_frame);
-      }
-      previous_frame_time = SDL_GetTicks();
-
-      update();
-      render();
+    int wait_next_frame = FRAME_TARGET_TIME - (SDL_GetTicks() - previous_frame_time);
+    if (wait_next_frame > 0 && wait_next_frame <= FRAME_TARGET_TIME) {
+      SDL_Delay((uint32_t)wait_next_frame);
     }
+    previous_frame_time = SDL_GetTicks();
+
+    update();
+    render();
   }
 
   destroy_mesh(mesh);
@@ -102,11 +102,12 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
-void process_command_line(int argc, char* argv[], int* width, int* height, bool* fullscreen) {
+const char* process_command_line(int argc, char* argv[], int* width, int* height, bool* fullscreen) {
 
   int requested_width = 0;
   int requested_height = 0;
   bool requested_fullscreen = false;
+  const char* requested_mesh_file = NULL;
 
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "--fullscreen") == 0) {
@@ -115,6 +116,8 @@ void process_command_line(int argc, char* argv[], int* width, int* height, bool*
       continue;
     } else if (sscanf(argv[i], "--h%d", &requested_height) == 1) {
       continue;
+    } else if (strncmp(argv[i], "--mesh=", 7) == 0) {
+      requested_mesh_file = argv[i] + 7;
     }
   }
 
@@ -126,6 +129,8 @@ void process_command_line(int argc, char* argv[], int* width, int* height, bool*
   if (requested_fullscreen) {
     *fullscreen = requested_fullscreen;
   }
+
+  return requested_mesh_file;
 }
 
 void process_input(bool* running) {
