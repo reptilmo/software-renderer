@@ -11,43 +11,43 @@
 #define NUM_CUBE_TRIANGLES 12
 
 static Vec3 cube_vertices[NUM_CUBE_VERTICES] = {
-  {.x = -1, .y = -1, .z = -1}, // 0
-  {.x = -1, .y = 1,  .z = -1}, // 1
-  {.x = 1,  .y = 1,  .z = -1}, // 2
-  {.x = 1,  .y = -1, .z = -1}, // 3
-  {.x = 1,  .y = 1,  .z = 1}, // 4
-  {.x = 1,  .y = -1, .z = 1}, // 5
-  {.x = -1, .y = 1,  .z = 1}, // 6
-  {.x = -1, .y = -1, .z = 1}, // 7
+    {.x = -1, .y = -1, .z = -1}, // 0
+    {.x = -1, .y = 1, .z = -1},  // 1
+    {.x = 1, .y = 1, .z = -1},   // 2
+    {.x = 1, .y = -1, .z = -1},  // 3
+    {.x = 1, .y = 1, .z = 1},    // 4
+    {.x = 1, .y = -1, .z = 1},   // 5
+    {.x = -1, .y = 1, .z = 1},   // 6
+    {.x = -1, .y = -1, .z = 1},  // 7
 };
 
 static Vec3 cube_normals[NUM_CUBE_NORMALS] = {
-  {.x =  0, .y = 0,  .z = -1}, // 0 Front
-  {.x =  1, .y = 0,  .z = 0},  // 1 Right
-  {.x =  0, .y = 0,  .z = 1},  // 2 Back
-  {.x = -1, .y = 0,  .z = 0},  // 3 Left
-  {.x =  0, .y = 1,  .z = 0},  // 4 Top
-  {.x =  0, .y = -1, .z = 0}, // 5 Bottom
+    {.x = 0, .y = 0, .z = -1}, // 0 Front
+    {.x = 1, .y = 0, .z = 0},  // 1 Right
+    {.x = 0, .y = 0, .z = 1},  // 2 Back
+    {.x = -1, .y = 0, .z = 0}, // 3 Left
+    {.x = 0, .y = 1, .z = 0},  // 4 Top
+    {.x = 0, .y = -1, .z = 0}, // 5 Bottom
 };
 
 static TriangleFace cube_triangles[NUM_CUBE_TRIANGLES] = {
-  {.a = 1, .b = 3, .c = 0, .normal = 0, .color = 0xFFFFFFFF}, // Front
-  {.a = 3, .b = 1, .c = 2, .normal = 0, .color = 0xFFFFFFFF},
+    {.a = 1, .b = 3, .c = 0, .normal = 0, .color = 0xFFFFFFFF}, // Front
+    {.a = 3, .b = 1, .c = 2, .normal = 0, .color = 0xFFFFFFFF},
 
-  {.a = 3, .b = 2, .c = 4, .normal = 1, .color = 0xFFFF00FF}, // Right
-  {.a = 4, .b = 5, .c = 3, .normal = 1, .color = 0xFFFF0000},
+    {.a = 3, .b = 2, .c = 4, .normal = 1, .color = 0xFFFF00FF}, // Right
+    {.a = 4, .b = 5, .c = 3, .normal = 1, .color = 0xFFFF0000},
 
-  {.a = 4, .b = 6, .c = 5, .normal = 2, .color = 0xFFFFFFFF}, // Back
-  {.a = 6, .b = 7, .c = 5, .normal = 2, .color = 0xFFFFFFFF},
+    {.a = 4, .b = 6, .c = 5, .normal = 2, .color = 0xFFFFFFFF}, // Back
+    {.a = 6, .b = 7, .c = 5, .normal = 2, .color = 0xFFFFFFFF},
 
-  {.a = 0, .b = 7, .c = 1, .normal = 3, .color = 0xFFFFFFFF}, // Left
-  {.a = 6, .b = 1, .c = 7, .normal = 3, .color = 0xFFFFFFFF},
+    {.a = 0, .b = 7, .c = 1, .normal = 3, .color = 0xFFFFFFFF}, // Left
+    {.a = 6, .b = 1, .c = 7, .normal = 3, .color = 0xFFFFFFFF},
 
-  {.a = 6, .b = 2, .c = 1, .normal = 4, .color = 0xFFFF0000}, // Top
-  {.a = 2, .b = 6, .c = 4, .normal = 4, .color = 0xFF00FF00},
+    {.a = 6, .b = 2, .c = 1, .normal = 4, .color = 0xFFFF0000}, // Top
+    {.a = 2, .b = 6, .c = 4, .normal = 4, .color = 0xFF00FF00},
 
-  {.a = 0, .b = 5, .c = 7, .normal = 5, .color = 0xFF00FF00}, // Bottom
-  {.a = 0, .b = 3, .c = 5, .normal = 5, .color = 0xFF00FF00},
+    {.a = 0, .b = 5, .c = 7, .normal = 5, .color = 0xFF00FF00}, // Bottom
+    {.a = 0, .b = 3, .c = 5, .normal = 5, .color = 0xFF00FF00},
 };
 
 Mesh* init_mesh() {
@@ -153,16 +153,16 @@ bool load_obj_mesh(Mesh* mesh, const char* obj_file_path) {
       int normal_idx[3] = {0};
 
       if (sscanf(buf, "f %i/%i/%i\t%i/%i/%i\t%i/%i/%i\n",
-        &vertex_idx[0], &texture_idx[0], &normal_idx[0],
-        &vertex_idx[1], &texture_idx[1], &normal_idx[1],
-        &vertex_idx[2], &texture_idx[2], &normal_idx[2]) == 9) {
+                 &vertex_idx[0], &texture_idx[0], &normal_idx[0],
+                 &vertex_idx[1], &texture_idx[1], &normal_idx[1],
+                 &vertex_idx[2], &texture_idx[2], &normal_idx[2]) == 9) {
 
         TriangleFace tri = {
-          .a = vertex_idx[0] - 1,
-          .b = vertex_idx[1] - 1,
-          .c = vertex_idx[2] - 1,
-          .normal = normal_idx[0] - 1, // FIXME:
-          .color = 0xFF0000FF,
+            .a = vertex_idx[0] - 1,
+            .b = vertex_idx[1] - 1,
+            .c = vertex_idx[2] - 1,
+            .normal = normal_idx[0] - 1, // FIXME:
+            .color = 0xFF0000FF,
         };
 
         dyn_array_push_back(mesh->triangles, tri);
@@ -173,4 +173,3 @@ bool load_obj_mesh(Mesh* mesh, const char* obj_file_path) {
   fclose(mesh_file);
   return true;
 }
-

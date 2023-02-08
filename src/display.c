@@ -4,7 +4,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-
 Display* init_display(int width, int height, bool fullscreen) {
 
   Display* display = (Display*)malloc(sizeof(Display));
@@ -18,13 +17,12 @@ Display* init_display(int width, int height, bool fullscreen) {
   display->fullscreen = fullscreen;
 
   display->window = SDL_CreateWindow(
-    "Software Renderer", // NULL,
-    SDL_WINDOWPOS_CENTERED,
-    SDL_WINDOWPOS_CENTERED,
-    display->width,
-    display->height,
-    display->fullscreen ? SDL_WINDOW_BORDERLESS : 0
-  );
+      "Software Renderer",
+      SDL_WINDOWPOS_CENTERED,
+      SDL_WINDOWPOS_CENTERED,
+      display->width,
+      display->height,
+      display->fullscreen ? SDL_WINDOW_BORDERLESS : 0);
 
   if (display->window == NULL) {
     fprintf(stderr, "Error in SDL create window!\n");
@@ -160,7 +158,7 @@ void draw_line_dda(Display* display, int x0, int y0, int x1, int y1, uint32_t co
   float py = (float)y0;
 
   for (int i = 0; i <= run_length; i++) {
-    display->pixel_buffer[display->width * (int)round(py) + (int)round(px)] = color; //FIXME: Clip to back buffer dimentions!
+    display->pixel_buffer[display->width * (int)round(py) + (int)round(px)] = color; // FIXME: Clip to back buffer dimentions!
     px += sx;
     py += sy;
   }
@@ -251,5 +249,3 @@ void draw_triangle(Display* display, int x0, int y0, int x1, int y1, int x2, int
     draw_flat_top_triangle(display, xm, ym, x1, y1, x2, y2, color);
   }
 }
-
-

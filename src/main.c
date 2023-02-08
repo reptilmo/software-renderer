@@ -1,12 +1,15 @@
 // main.c
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
+#include <string.h>
 
-#include "display.h"
-#include "vec.h"
-#include "mesh.h"
 #include "darray.h"
+#include "display.h"
+#include "mesh.h"
 #include "renderer.h"
+#include "vec.h"
+
+#include "sort.h"
 
 #define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
@@ -73,8 +76,8 @@ int main(int argc, char* argv[]) {
   }
 
   // FIXEME:
-  if (load_cube_mesh(mesh)) {
-  //if (load_obj_mesh(mesh, "E:\\software-renderer\\data\\cube.obj")) {
+  // if (load_cube_mesh(mesh)) {
+  if (load_obj_mesh(mesh, "E:\\software-renderer\\data\\torus.obj")) {
     bool running = true;
 
     while (running) {
@@ -106,13 +109,13 @@ void process_command_line(int argc, char* argv[], int* width, int* height, bool*
   bool requested_fullscreen = false;
 
   for (int i = 1; i < argc; i++) {
-    if (strncmp(argv[i], "--fullscreen") == 0) {
+    if (strcmp(argv[i], "--fullscreen") == 0) {
       requested_fullscreen = true;
     } else if (sscanf(argv[i], "--w%d", &requested_width) == 1) {
       continue;
     } else if (sscanf(argv[i], "--h%d", &requested_height) == 1) {
       continue;
-    } 
+    }
   }
 
   if (requested_width > 0 && requested_height > 0) {
@@ -143,8 +146,7 @@ void process_input(bool* running) {
         enable_backface_culling = true;
       }
       renderer_cull_mode(renderer,
-        enable_backface_culling ?
-        CULL_MODE_BACKFACE : CULL_MODE_NONE);
+                         enable_backface_culling ? CULL_MODE_BACKFACE : CULL_MODE_NONE);
     } else if (event.key.keysym.scancode == SDL_SCANCODE_1) {
       if (enable_draw_fill) {
         enable_draw_fill = false;
@@ -218,14 +220,13 @@ void render(void) {
 
   renderer_begin_frame(renderer);
   renderer_begin_triangles(
-    renderer,
-    mesh->triangles,
-    dyn_array_length(mesh->triangles),
-    transformed_mesh_vertices,
-    dyn_array_length(transformed_mesh_vertices),
-    transformed_mesh_normals,
-    dyn_array_length(transformed_mesh_normals)
-  );
+      renderer,
+      mesh->triangles,
+      dyn_array_length(mesh->triangles),
+      transformed_mesh_vertices,
+      dyn_array_length(transformed_mesh_vertices),
+      transformed_mesh_normals,
+      dyn_array_length(transformed_mesh_normals));
 
   renderer_end_triangles(renderer);
   renderer_end_frame(renderer);

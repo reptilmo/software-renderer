@@ -1,8 +1,24 @@
 // renderer.c
 #include "renderer.h"
 #include "darray.h"
+#include "sort.h"
 
 #include <assert.h>
+
+void swap_render_triangles(void* left, void* right) {
+  Triangle tmp = *(Triangle*)left;
+  *(Triangle*)left = *(Triangle*)right;
+  *(Triangle*)right = tmp;
+}
+
+bool less_render_triangles(void* left, void* right) {
+
+  const float left_avg_z = (((Triangle*)left)->a.z + ((Triangle*)left)->b.z + ((Triangle*)left)->c.z) / 3.0f;
+
+  const float right_avg_z = (((Triangle*)right)->a.z + ((Triangle*)right)->b.z + ((Triangle*)right)->c.z) / 3.0f;
+
+  return left_avg_z > right_avg_z;
+}
 
 Renderer* init_renderer(Display* display) {
   assert(display != NULL);
@@ -77,7 +93,7 @@ void renderer_end_frame(Renderer* renderer) {
 }
 
 void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t num_faces,
-  Vec3* vertices, size_t num_vertices, Vec3* normals, size_t num_normals) {
+                              Vec3* vertices, size_t num_vertices, Vec3* normals, size_t num_normals) {
 
   assert(renderer != NULL);
 
@@ -94,15 +110,18 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
         .c = vertices[face.c],
         .color = face.color,
     };
-    
+
     if (renderer->cull_mode == CULL_MODE_BACKFACE) {
-      //const Vec3 triangle_normal = vec3_cross(vec3_sub(triangle.b, triangle.a), vec3_sub(triangle.c, triangle.a));
+      /*const Vec3 ab = vec3_normalize(vec3_sub(triangle.b, triangle.a));
+      const Vec3 ac = vec3_normalize(vec3_sub(triangle.c, triangle.a));
+      const Vec3 triangle_normal = vec3_cross(ab, ac);*/
 
       assert(face.normal < num_normals);
       const Vec3 triangle_normal = normals[face.normal];
       const Vec3 camera_direction = vec3_sub(renderer->camera_position, triangle.a);
+      const float dot_product = vec3_dot(camera_direction, triangle_normal);
 
-      if (vec3_dot(camera_direction, triangle_normal) >= 0) {
+      if (dot_product >= 0) {
         dyn_array_push_back(renderer->renderable_triangles, triangle);
       }
     } else {
@@ -111,6 +130,9 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
   }
 
   const size_t renderable_count = dyn_array_length(renderer->renderable_triangles);
+
+  insertion_sort(renderer->renderable_triangles, renderable_count,
+                 sizeof(Triangle), less_render_triangles, swap_render_triangles);
 
   for (size_t i = 0; i < renderable_count; i++) {
     const Triangle triangle = renderer->renderable_triangles[i];
@@ -137,14 +159,14 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
     }
 
     if (renderer->draw_mode & DRAW_MODE_POINTS) {
-      draw_rect(renderer->display, a.x, a.y, 6, 6, 0xFFFFFF00);
-      draw_rect(renderer->display, b.x, b.y, 6, 6, 0xFFFFFF00);
-      draw_rect(renderer->display, c.x, c.y, 6, 6, 0xFFFFFF00);
+      draw_rect(renderer->display, a.x, a.y, 6, 6, 0xFFFF0000);
+      draw_rect(renderer->display, b.x, b.y, 6, 6, 0xFF00FF00);
+      draw_rect(renderer->display, c.x, c.y, 6, 6, 0xFFFF00FF);
     }
   }
 }
 
-void renderer_end_triangles(Renderer *renderer) {
+void renderer_end_triangles(Renderer* renderer) {
   assert(renderer != NULL);
   dyn_array_clear(renderer->renderable_triangles);
 }
