@@ -2,10 +2,6 @@
 #include "mesh.h"
 #include "darray.h"
 
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
-
 #define NUM_CUBE_VERTICES 8
 #define NUM_CUBE_NORMALS 6
 #define NUM_CUBE_TRIANGLES 12

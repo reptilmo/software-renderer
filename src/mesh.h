@@ -1,10 +1,8 @@
 // mesh.h
 #pragma once
 
+#include "system.h"
 #include "vec.h"
-
-#include <stdbool.h>
-#include <stdint.h>
 
 typedef struct TriangleFace {
   int a, b, c;
@@ -18,7 +16,7 @@ typedef struct Mesh {
   TriangleFace* triangles;
 } Mesh;
 
-Mesh* init_mesh();
+Mesh* init_mesh(void);
 void destroy_mesh(Mesh* mesh);
 
 size_t get_mesh_vertex_count(const Mesh* mesh);

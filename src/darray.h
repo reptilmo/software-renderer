@@ -1,7 +1,7 @@
 // darray.h
 #pragma once
 
-#include <stdlib.h>
+#include "system.h"
 
 #define dyn_array_push_back(array, element)                \
   do {                                                     \

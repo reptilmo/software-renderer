@@ -1,8 +1,6 @@
 // darray.c
 #include "darray.h"
 
-#include <assert.h>
-
 #define RAW_ARRAY(array) (((size_t*)(array)) - 2)
 #define ARRAY_CAPACITY(array) (RAW_ARRAY(array)[0])
 #define ARRAY_LENGTH(array) (RAW_ARRAY(array)[1])

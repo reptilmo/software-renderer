@@ -3,8 +3,6 @@
 #include "darray.h"
 #include "sort.h"
 
-#include <assert.h>
-
 void swap_render_triangles(void* left, void* right) {
   Triangle tmp = *(Triangle*)left;
   *(Triangle*)left = *(Triangle*)right;

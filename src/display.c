@@ -1,8 +1,6 @@
 // display.c
 #include "display.h"
 
-#include <assert.h>
-#include <stdio.h>
 
 Display* init_display(int width, int height, bool fullscreen) {
 
@@ -243,7 +241,7 @@ void draw_triangle(Display* display, int x0, int y0, int x1, int y1, int x2, int
     draw_flat_top_triangle(display, x0, y0, x1, y1, x2, y2, color);
   } else {
     const int ym = y1;
-    const int xm = (y1 - y0) * (x2 - x0) / (float)(y2 - y0) + x0;
+    const int xm = (int)((y1 - y0) * (x2 - x0) / (float)(y2 - y0) + x0);
 
     draw_flat_bottom_triangle(display, x0, y0, x1, y1, xm, ym, color);
     draw_flat_top_triangle(display, xm, ym, x1, y1, x2, y2, color);

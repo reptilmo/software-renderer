@@ -1,15 +1,10 @@
 // main.c
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
-
 #include "darray.h"
 #include "display.h"
 #include "mesh.h"
 #include "renderer.h"
 #include "vec.h"
-
-#include "sort.h"
+#include "mat.h"
 
 #define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
@@ -29,8 +24,9 @@ bool enable_draw_points = false;
 DrawMode draw_mode = DRAW_MODE_TRIANGLE_FILL | DRAW_MODE_TRIANGLE_WIRE;
 
 Mesh* mesh = NULL;
+float mesh_scale = 1.0f;
 Vec3 mesh_rotation = {.x = 0, .y = 0, .z = 0};
-Vec3* mesh_normals = NULL;
+
 
 Vec3* transformed_mesh_vertices = NULL;
 Vec3* transformed_mesh_normals = NULL;
@@ -189,9 +185,23 @@ void process_input(bool* running) {
 void update(void) {
   assert(mesh != NULL);
 
+  mesh_scale += 0.001f;
+  if (mesh_scale >= 2.0f) {
+    mesh_scale = 1.0f;
+  }
+
   mesh_rotation.x += 0.01f;
   mesh_rotation.y += 0.01f;
   mesh_rotation.z += 0.01f;
+
+  Mat4 scale = mat4_make_scale(mesh_scale, mesh_scale, mesh_scale);
+
+  Mat4 rotate = mat4_mul(mat4_make_rotate_z(mesh_rotation.z),
+    mat4_mul(mat4_make_rotate_y(mesh_rotation.y),
+      mat4_make_rotate_x(mesh_rotation.x)));
+
+  Mat4 translate = mat4_make_translate(0.0f, 0.0f, 10.0f);
+  Mat4 transform = mat4_mul(mat4_mul(translate, rotate), scale);
 
   const size_t mesh_vertex_count = get_mesh_vertex_count(mesh);
   const size_t mesh_normal_count = get_mesh_normal_count(mesh);
@@ -200,10 +210,7 @@ void update(void) {
 
   for (int i = 0; i < mesh_vertex_count; i++) {
     Vec3 vertex = mesh->vertices[i];
-    vertex = rotate_around_x(vertex, mesh_rotation.x);
-    vertex = rotate_around_y(vertex, mesh_rotation.y);
-    vertex = rotate_around_z(vertex, mesh_rotation.z);
-    vertex.z += 5.0f;
+    vertex = vec4_xyz(mat4_mul_vec4(transform, vec3_xyzw(vertex)));
 
     dyn_array_push_back(transformed_mesh_vertices, vertex);
   }
@@ -211,10 +218,10 @@ void update(void) {
   dyn_array_clear(transformed_mesh_normals);
 
   for (int i = 0; i < mesh_normal_count; i++) {
-    Vec3 normal = mesh->normals[i];
-    normal = rotate_around_x(normal, mesh_rotation.x);
-    normal = rotate_around_y(normal, mesh_rotation.y);
-    normal = rotate_around_z(normal, mesh_rotation.z);
+    Vec3 normal = vec4_xyz(mat4_mul_vec4(
+      rotate,
+      vec3_xyzw(mesh->normals[i])
+    ));
 
     dyn_array_push_back(transformed_mesh_normals, normal);
   }

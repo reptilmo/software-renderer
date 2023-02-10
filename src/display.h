@@ -1,10 +1,7 @@
 // display.h
 #pragma once
 
-#include <stdbool.h>
-#include <stdint.h>
-
-#include <SDL.h>
+#include "system.h"
 
 typedef struct Display {
   SDL_Window* window;
