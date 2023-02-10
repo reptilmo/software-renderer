@@ -7,7 +7,6 @@ add_executable(renderer
     vec.h
     vec.c
     mat.h
-    mat.c
     mesh.h
     mesh.c
     display.h
