@@ -5,7 +5,6 @@ add_executable(renderer
     darray.h
     darray.c
     vec.h
-    vec.c
     mat.h
     mesh.h
     mesh.c

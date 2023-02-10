@@ -12,5 +12,4 @@
 #include <SDL.h>
 
 #define INLINE inline
-
-
+#define RADIANS(degrees) ((degrees) * 0.01745329f)

@@ -108,3 +108,22 @@ INLINE Mat4 mat4_make_rotate_z(float a) {
   }};
   return m;
 }
+
+INLINE Mat4 mat4_make_perspective(float view_width,
+                                  float view_height, float field_of_view, float near_plane, float far_plane) {
+
+  const float aspect_ratio = view_height / view_width;
+  const float fov_factor = 1.0f / tanf(RADIANS(field_of_view * 0.5f));
+  const float far_factor = far_plane / (far_plane - near_plane);
+  const float near_factor = -1.0f * far_factor * near_plane;
+
+  Mat4 perspective_projection = {{
+      {aspect_ratio * fov_factor, 0, 0, 0},
+      {0, fov_factor, 0, 0},
+      {0, 0, far_factor, near_factor},
+      {0, 0, 1, 0},
+  }};
+  return perspective_projection;
+}
+
+

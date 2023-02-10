@@ -180,4 +180,13 @@ INLINE Vec4 vec3_xyzw(Vec3 v) {
   return out;
 }
 
-Vec2 project(Vec3 point); // FIXME:
+INLINE Vec4 perspective_divide(Vec4 p) {
+  if (p.w != 0.0) {
+    const float w_factor = 1.0f / p.w;
+    p.x *= w_factor;
+    p.y *= w_factor;
+    p.z *= w_factor;
+  }
+
+  return p;
+}

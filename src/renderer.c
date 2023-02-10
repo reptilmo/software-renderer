@@ -25,14 +25,20 @@ Renderer* init_renderer(Display* display) {
     if (renderer != NULL) {
       renderer->display = display;
       renderer->renderable_triangles = NULL;
-      renderer->display_half_width = display->width / 2;
-      renderer->display_half_height = display->height / 2;
       renderer->camera_position.x = 0.0f;
       renderer->camera_position.y = 0.0f;
       renderer->camera_position.z = 0.0f;
       renderer->clear_color = 0xFF000000;
       renderer->draw_mode = DRAW_MODE_TRIANGLE_FILL;
       renderer->cull_mode = CULL_MODE_NONE;
+
+      renderer->projection_matrix = mat4_make_perspective(
+        (float)renderer->display->width,
+        (float)renderer->display->height,
+        60.0f, 1.0f, 1000.0f);
+
+      renderer->view_half_width = display->width * 0.5f;
+      renderer->view_half_height = display->height * 0.5f;
 
       return renderer;
     }
@@ -135,16 +141,28 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
   for (size_t i = 0; i < renderable_count; i++) {
     const Triangle triangle = renderer->renderable_triangles[i];
 
-    Vec2 a = project(triangle.a);
-    Vec2 b = project(triangle.b);
-    Vec2 c = project(triangle.c);
+    Vec4 a = mat4_mul_vec4(renderer->projection_matrix, vec3_xyzw(triangle.a));
+    Vec4 b = mat4_mul_vec4(renderer->projection_matrix, vec3_xyzw(triangle.b));
+    Vec4 c = mat4_mul_vec4(renderer->projection_matrix, vec3_xyzw(triangle.c));
 
-    a.x += renderer->display_half_width;
-    a.y += renderer->display_half_height;
-    b.x += renderer->display_half_width;
-    b.y += renderer->display_half_height;
-    c.x += renderer->display_half_width;
-    c.y += renderer->display_half_height;
+    a = perspective_divide(a);
+    b = perspective_divide(b);
+    c = perspective_divide(c);
+
+    // Scale and translate from NDC space to viewport
+    a.x *= renderer->view_half_width;
+    a.y *= renderer->view_half_height;
+    b.x *= renderer->view_half_width;
+    b.y *= renderer->view_half_height;
+    c.x *= renderer->view_half_width;
+    c.y *= renderer->view_half_height;
+
+    a.x += renderer->view_half_width;
+    a.y += renderer->view_half_height;
+    b.x += renderer->view_half_width;
+    b.y += renderer->view_half_height;
+    c.x += renderer->view_half_width;
+    c.y += renderer->view_half_height;
 
     if (renderer->draw_mode & DRAW_MODE_TRIANGLE_FILL) {
       draw_triangle(renderer->display, a.x, a.y, b.x, b.y, c.x, c.y, triangle.color);

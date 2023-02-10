@@ -4,6 +4,7 @@
 #include "display.h"
 #include "mesh.h"
 #include "vec.h"
+#include "mat.h"
 
 typedef struct Triangle {
   Vec3 a, b, c;
@@ -28,8 +29,9 @@ typedef struct Renderer {
   uint32_t clear_color;
   DrawMode draw_mode;
   CullMode cull_mode;
-  int display_half_width;
-  int display_half_height;
+  Mat4 projection_matrix;
+  float view_half_width;
+  float view_half_height;
 } Renderer;
 
 Renderer* init_renderer(Display* display);

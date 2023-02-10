@@ -54,7 +54,8 @@ Display* init_display(int width, int height, bool fullscreen) {
     return NULL;
   }
 
-  display->pixel_buffer = (uint32_t*)malloc(sizeof(uint32_t) * display->width * display->height);
+  display->pixel_buffer_len = (size_t)display->width * (size_t)display->height;
+  display->pixel_buffer = (uint32_t*)malloc(sizeof(uint32_t) * display->pixel_buffer_len);
   if (display->pixel_buffer == NULL) {
     fprintf(stderr, "Failed to allocate pixel buffer!\n");
     destroy_display(display);
@@ -110,9 +111,7 @@ void draw_grid(Display* display, int step, uint32_t color) {
 
   for (int y = 0; y < display->height; y += step) {
     for (int x = 0; x < display->width; x += step) {
-      // if (x % 10 == 0 || y % step == 0) {
       display->pixel_buffer[display->width * y + x] = color;
-      //}
     }
   }
 }
@@ -156,7 +155,12 @@ void draw_line_dda(Display* display, int x0, int y0, int x1, int y1, uint32_t co
   float py = (float)y0;
 
   for (int i = 0; i <= run_length; i++) {
-    display->pixel_buffer[display->width * (int)round(py) + (int)round(px)] = color; // FIXME: Clip to back buffer dimentions!
+    const size_t offset = (size_t)display->width * (size_t)round(py) + (size_t)round(px);
+    if (offset < 0 || offset >= display->pixel_buffer_len) {
+      continue;
+    }
+
+    display->pixel_buffer[offset] = color;
     px += sx;
     py += sy;
   }
@@ -169,7 +173,7 @@ inline void swap_int(int* a, int* b) {
 }
 
 static void draw_scanline(Display* display, int x0, int x1, int y, uint32_t color) {
-  if (y >= display->height) {
+  if (y < 0 || y >= display->height) {
     return;
   }
 

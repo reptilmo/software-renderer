@@ -200,7 +200,7 @@ void update(void) {
     mat4_mul(mat4_make_rotate_y(mesh_rotation.y),
       mat4_make_rotate_x(mesh_rotation.x)));
 
-  Mat4 translate = mat4_make_translate(0.0f, 0.0f, 10.0f);
+  Mat4 translate = mat4_make_translate(0.0f, 0.0f, 5.0f);
   Mat4 transform = mat4_mul(mat4_mul(translate, rotate), scale);
 
   const size_t mesh_vertex_count = get_mesh_vertex_count(mesh);

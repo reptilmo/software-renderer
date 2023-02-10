@@ -8,6 +8,7 @@ typedef struct Display {
   SDL_Renderer* renderer;
   SDL_Texture* pixel_buffer_texture;
   uint32_t* pixel_buffer;
+  size_t pixel_buffer_len;
   int width;
   int height;
   bool fullscreen;
