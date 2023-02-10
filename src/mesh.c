@@ -67,7 +67,7 @@ void destroy_mesh(Mesh* mesh) {
 }
 
 size_t get_mesh_vertex_count(const Mesh* mesh) {
-  assert(mesh != NULL);
+  ASSERT(mesh != NULL);
   if (mesh != NULL) {
     return dyn_array_length(mesh->vertices);
   }
@@ -75,7 +75,7 @@ size_t get_mesh_vertex_count(const Mesh* mesh) {
 }
 
 size_t get_mesh_normal_count(const Mesh* mesh) {
-  assert(mesh != NULL);
+  ASSERT(mesh != NULL);
   if (mesh != NULL) {
     return dyn_array_length(mesh->normals);
   }
@@ -83,7 +83,7 @@ size_t get_mesh_normal_count(const Mesh* mesh) {
 }
 
 size_t get_mesh_triangle_count(const Mesh* mesh) {
-  assert(mesh != NULL);
+  ASSERT(mesh != NULL);
   if (mesh != NULL) {
     return dyn_array_length(mesh->triangles);
   }
@@ -91,7 +91,7 @@ size_t get_mesh_triangle_count(const Mesh* mesh) {
 }
 
 bool load_cube_mesh(Mesh* mesh) {
-  assert(mesh != NULL);
+  ASSERT(mesh != NULL);
   if (mesh == NULL) {
     return false;
   }
@@ -110,7 +110,7 @@ bool load_cube_mesh(Mesh* mesh) {
 }
 
 bool load_obj_mesh(Mesh* mesh, const char* obj_file_path) {
-  assert(mesh != NULL);
+  ASSERT(mesh != NULL);
   if (mesh == NULL) {
     return false;
   }

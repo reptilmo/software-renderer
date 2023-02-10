@@ -10,7 +10,7 @@ void* dyn_array_alloc(void* array, size_t element_count, size_t element_size) {
   if (array == NULL) {
     size_t raw_size = sizeof(size_t) * 2 + element_count * element_size;
     size_t* raw_array = (size_t*)malloc(raw_size);
-    assert(raw_array != NULL);
+    ASSERT(raw_array != NULL);
     raw_array[0] = element_count;
     raw_array[1] = element_count;
     return raw_array + 2;
@@ -22,7 +22,7 @@ void* dyn_array_alloc(void* array, size_t element_count, size_t element_size) {
     size_t new_capacity = needed_capacity > ARRAY_CAPACITY(array) * 2 ? needed_capacity : ARRAY_CAPACITY(array) * 2;
     size_t raw_size = sizeof(size_t) * 2 + new_capacity * element_size;
     size_t* raw_array = (size_t*)realloc(RAW_ARRAY(array), raw_size);
-    assert(raw_array != NULL);
+    ASSERT(raw_array != NULL);
     raw_array[0] = new_capacity;
     raw_array[1] = needed_capacity;
     return raw_array + 2;

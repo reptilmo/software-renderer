@@ -27,13 +27,11 @@ Mesh* mesh = NULL;
 float mesh_scale = 1.0f;
 Vec3 mesh_rotation = {.x = 0, .y = 0, .z = 0};
 
-
 Vec3* transformed_mesh_vertices = NULL;
 Vec3* transformed_mesh_normals = NULL;
 uint32_t previous_frame_time = 0;
 
 int main(int argc, char* argv[]) {
-
   int width = 800;
   int height = 600;
   bool fullscreen = false;
@@ -183,7 +181,7 @@ void process_input(bool* running) {
 }
 
 void update(void) {
-  assert(mesh != NULL);
+  ASSERT(mesh != NULL);
 
   mesh_scale += 0.001f;
   if (mesh_scale >= 2.0f) {
@@ -228,7 +226,7 @@ void update(void) {
 }
 
 void render(void) {
-  assert(renderer != NULL);
+  ASSERT(renderer != NULL);
 
   renderer_begin_frame(renderer);
   renderer_begin_triangles(

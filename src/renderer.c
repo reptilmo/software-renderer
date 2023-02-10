@@ -19,7 +19,7 @@ bool less_render_triangles(void* left, void* right) {
 }
 
 Renderer* init_renderer(Display* display) {
-  assert(display != NULL);
+  ASSERT(display != NULL);
   if (display != NULL) {
     Renderer* renderer = (Renderer*)malloc(sizeof(Renderer));
     if (renderer != NULL) {
@@ -48,7 +48,7 @@ Renderer* init_renderer(Display* display) {
 }
 
 void destroy_renderer(Renderer* renderer) {
-  assert(renderer != NULL);
+  ASSERT(renderer != NULL);
   if (renderer != NULL) {
     dyn_array_free(renderer->renderable_triangles);
     free(renderer);
@@ -56,42 +56,42 @@ void destroy_renderer(Renderer* renderer) {
 }
 
 void renderer_cull_mode(Renderer* renderer, CullMode cull_mode) {
-  assert(renderer != NULL);
+  ASSERT(renderer != NULL);
   if (renderer != NULL) {
     renderer->cull_mode = cull_mode;
   }
 }
 
 void renderer_draw_mode(Renderer* renderer, DrawMode draw_mode) {
-  assert(renderer != NULL);
+  ASSERT(renderer != NULL);
   if (renderer != NULL) {
     renderer->draw_mode = draw_mode;
   }
 }
 
 void renderer_camera_position(Renderer* renderer, Vec3 position) {
-  assert(renderer != NULL);
+  ASSERT(renderer != NULL);
   if (renderer != NULL) {
     renderer->camera_position = position;
   }
 }
 
 void renderer_clear_color(Renderer* renderer, uint32_t color) {
-  assert(renderer != NULL);
+  ASSERT(renderer != NULL);
   if (renderer != NULL) {
     renderer->clear_color = color;
   }
 }
 
 void renderer_begin_frame(Renderer* renderer) {
-  assert(renderer != NULL);
+  ASSERT(renderer != NULL);
 
   clear_pixel_buffer(renderer->display, renderer->clear_color);
   draw_grid(renderer->display, 10, 0xFF333333);
 }
 
 void renderer_end_frame(Renderer* renderer) {
-  assert(renderer != NULL);
+  ASSERT(renderer != NULL);
 
   present_pixel_buffer(renderer->display);
 }
@@ -99,14 +99,14 @@ void renderer_end_frame(Renderer* renderer) {
 void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t num_faces,
                               Vec3* vertices, size_t num_vertices, Vec3* normals, size_t num_normals) {
 
-  assert(renderer != NULL);
+  ASSERT(renderer != NULL);
 
   for (size_t face_idx = 0; face_idx < num_faces; face_idx++) {
 
     const TriangleFace face = faces[face_idx];
-    assert(face.a < num_vertices);
-    assert(face.b < num_vertices);
-    assert(face.c < num_vertices);
+    ASSERT(face.a < num_vertices);
+    ASSERT(face.b < num_vertices);
+    ASSERT(face.c < num_vertices);
 
     const Triangle triangle = {
         .a = vertices[face.a],
@@ -120,7 +120,7 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
       const Vec3 ac = vec3_normalize(vec3_sub(triangle.c, triangle.a));
       const Vec3 triangle_normal = vec3_cross(ab, ac);*/
 
-      assert(face.normal < num_normals);
+      ASSERT(face.normal < num_normals);
       const Vec3 triangle_normal = normals[face.normal];
       const Vec3 camera_direction = vec3_sub(renderer->camera_position, triangle.a);
       const float dot_product = vec3_dot(camera_direction, triangle_normal);
@@ -183,6 +183,6 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
 }
 
 void renderer_end_triangles(Renderer* renderer) {
-  assert(renderer != NULL);
+  ASSERT(renderer != NULL);
   dyn_array_clear(renderer->renderable_triangles);
 }

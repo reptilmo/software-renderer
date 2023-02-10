@@ -66,7 +66,7 @@ Display* init_display(int width, int height, bool fullscreen) {
 }
 
 void destroy_display(Display* display) {
-  assert(display != NULL);
+  ASSERT(display != NULL);
   if (display != NULL) {
     if (display->pixel_buffer != NULL) {
       free(display->pixel_buffer);
