@@ -25,6 +25,7 @@ typedef enum DrawMode {
 typedef struct Renderer {
   Display* display;
   Triangle* renderable_triangles;
+  Vec3 light_direction;
   Vec3 camera_position;
   uint32_t clear_color;
   DrawMode draw_mode;
@@ -40,6 +41,7 @@ void destroy_renderer(Renderer* renderer);
 void renderer_cull_mode(Renderer* renderer, CullMode cull_mode);
 void renderer_draw_mode(Renderer* renderer, DrawMode draw_mode);
 void renderer_camera_position(Renderer* renderer, Vec3 position);
+void renderer_light_direction(Renderer* renderer, Vec3 light_direction);
 void renderer_clear_color(Renderer* renderer, uint32_t color);
 
 void renderer_begin_frame(Renderer* renderer);

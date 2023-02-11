@@ -6,6 +6,8 @@
 #include "vec.h"
 #include "mat.h"
 
+#include "color.h"
+
 #define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
 
@@ -19,9 +21,9 @@ Renderer* renderer = NULL;
 const Vec3 camera_position = {.x = 0, .y = 0, .z = 0};
 bool enable_backface_culling = true;
 bool enable_draw_fill = true;
-bool enable_draw_wireframe = true;
+bool enable_draw_wireframe = false;
 bool enable_draw_points = false;
-DrawMode draw_mode = DRAW_MODE_TRIANGLE_FILL | DRAW_MODE_TRIANGLE_WIRE;
+DrawMode draw_mode = DRAW_MODE_TRIANGLE_FILL;
 
 Mesh* mesh = NULL;
 float mesh_scale = 1.0f;

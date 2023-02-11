@@ -2,6 +2,7 @@
 #include "renderer.h"
 #include "darray.h"
 #include "sort.h"
+#include "color.h"
 
 void swap_render_triangles(void* left, void* right) {
   Triangle tmp = *(Triangle*)left;
@@ -9,7 +10,7 @@ void swap_render_triangles(void* left, void* right) {
   *(Triangle*)right = tmp;
 }
 
-bool less_render_triangles(void* left, void* right) {
+bool farther_triangle(void* left, void* right) {
 
   const float left_avg_z = (((Triangle*)left)->a.z + ((Triangle*)left)->b.z + ((Triangle*)left)->c.z) / 3.0f;
 
@@ -28,6 +29,9 @@ Renderer* init_renderer(Display* display) {
       renderer->camera_position.x = 0.0f;
       renderer->camera_position.y = 0.0f;
       renderer->camera_position.z = 0.0f;
+      renderer->light_direction.x = 0.0f;
+      renderer->light_direction.y = 0.0f;
+      renderer->light_direction.z = 1.0f;
       renderer->clear_color = 0xFF000000;
       renderer->draw_mode = DRAW_MODE_TRIANGLE_FILL;
       renderer->cull_mode = CULL_MODE_NONE;
@@ -108,20 +112,25 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
     ASSERT(face.b < num_vertices);
     ASSERT(face.c < num_vertices);
 
+    /*const Vec3 ab = vec3_normalize(vec3_sub(triangle.b, triangle.a));
+      const Vec3 ac = vec3_normalize(vec3_sub(triangle.c, triangle.a));
+      const Vec3 triangle_normal = vec3_cross(ab, ac);*/
+    ASSERT(face.normal < num_normals);
+    const Vec3 triangle_normal = normals[face.normal];
+    const float light_intensity = -1.0f * vec3_dot(renderer->light_direction, triangle_normal);
+    Color triangle_color = color_apply_intensity(color_from_u32(face.color), 0.01f);
+    if (light_intensity > 0.01f) {
+      triangle_color = color_apply_intensity(color_from_u32(face.color), light_intensity);
+    }
+
     const Triangle triangle = {
         .a = vertices[face.a],
         .b = vertices[face.b],
         .c = vertices[face.c],
-        .color = face.color,
+        .color = color_to_u32(triangle_color),
     };
 
     if (renderer->cull_mode == CULL_MODE_BACKFACE) {
-      /*const Vec3 ab = vec3_normalize(vec3_sub(triangle.b, triangle.a));
-      const Vec3 ac = vec3_normalize(vec3_sub(triangle.c, triangle.a));
-      const Vec3 triangle_normal = vec3_cross(ab, ac);*/
-
-      ASSERT(face.normal < num_normals);
-      const Vec3 triangle_normal = normals[face.normal];
       const Vec3 camera_direction = vec3_sub(renderer->camera_position, triangle.a);
       const float dot_product = vec3_dot(camera_direction, triangle_normal);
 
@@ -136,7 +145,7 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
   const size_t renderable_count = dyn_array_length(renderer->renderable_triangles);
 
   insertion_sort(renderer->renderable_triangles, renderable_count,
-                 sizeof(Triangle), less_render_triangles, swap_render_triangles);
+                 sizeof(Triangle), farther_triangle, swap_render_triangles);
 
   for (size_t i = 0; i < renderable_count; i++) {
     const Triangle triangle = renderer->renderable_triangles[i];
@@ -151,11 +160,11 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
 
     // Scale and translate from NDC space to viewport
     a.x *= renderer->view_half_width;
-    a.y *= renderer->view_half_height;
+    a.y *= -renderer->view_half_height;
     b.x *= renderer->view_half_width;
-    b.y *= renderer->view_half_height;
+    b.y *= -renderer->view_half_height;
     c.x *= renderer->view_half_width;
-    c.y *= renderer->view_half_height;
+    c.y *= -renderer->view_half_height;
 
     a.x += renderer->view_half_width;
     a.y += renderer->view_half_height;
