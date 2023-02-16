@@ -3,6 +3,7 @@
 #include "darray.h"
 
 #define NUM_CUBE_VERTICES 8
+#define NUM_CUBE_UVS 4
 #define NUM_CUBE_NORMALS 6
 #define NUM_CUBE_TRIANGLES 12
 
@@ -17,6 +18,13 @@ static Vec3 cube_vertices[NUM_CUBE_VERTICES] = {
     {.x = -1, .y = -1, .z = 1},  // 7
 };
 
+static Vec2 cube_uvs[NUM_CUBE_UVS] = {
+  {.x = 1.0f, .y = 1.0f},
+  {.x = 0.0f, .y = 1.0f},
+  {.x = 0.0f, .y = 0.0f},
+  {.x = 1.0f, .y = 0.0f},
+};
+
 static Vec3 cube_normals[NUM_CUBE_NORMALS] = {
     {.x = 0, .y = 0, .z = -1}, // 0 Front
     {.x = 1, .y = 0, .z = 0},  // 1 Right
@@ -27,18 +35,18 @@ static Vec3 cube_normals[NUM_CUBE_NORMALS] = {
 };
 
 static TriangleFace cube_triangles[NUM_CUBE_TRIANGLES] = {
-    {.a = 1, .b = 3, .c = 0, .normal = 0, .color = 0xFFFFFFFF}, // Front
-    {.a = 3, .b = 1, .c = 2, .normal = 0, .color = 0xFFFFFFFF},
-    {.a = 3, .b = 2, .c = 4, .normal = 1, .color = 0xFFFFFFFF}, // Right
-    {.a = 4, .b = 5, .c = 3, .normal = 1, .color = 0xFFFFFFFF},
-    {.a = 4, .b = 6, .c = 5, .normal = 2, .color = 0xFFFFFFFF}, // Back
-    {.a = 6, .b = 7, .c = 5, .normal = 2, .color = 0xFFFFFFFF},
-    {.a = 0, .b = 7, .c = 1, .normal = 3, .color = 0xFFFFFFFF}, // Left
-    {.a = 6, .b = 1, .c = 7, .normal = 3, .color = 0xFFFFFFFF},
-    {.a = 6, .b = 2, .c = 1, .normal = 4, .color = 0xFFFFFFFF}, // Top
-    {.a = 2, .b = 6, .c = 4, .normal = 4, .color = 0xFFFFFFFF},
-    {.a = 0, .b = 5, .c = 7, .normal = 5, .color = 0xFFFFFFFF}, // Bottom
-    {.a = 0, .b = 3, .c = 5, .normal = 5, .color = 0xFFFFFFFF},
+    {.a = 1, .b = 3, .c = 0, .a_uv = 1, .b_uv = 3, .c_uv = 2, .normal = 0, .color = 0xFFFFFFFF}, // Front
+    {.a = 3, .b = 1, .c = 2, .a_uv = 3, .b_uv = 1, .c_uv = 0, .normal = 0, .color = 0xFFFFFFFF},
+    {.a = 3, .b = 2, .c = 4, .a_uv = 2, .b_uv = 1, .c_uv = 0, .normal = 1, .color = 0xFFFFFFFF}, // Right
+    {.a = 4, .b = 5, .c = 3, .a_uv = 2, .b_uv = 3, .c_uv = 0, .normal = 1, .color = 0xFFFFFFFF},
+    {.a = 6, .b = 7, .c = 5, .a_uv = 2, .b_uv = 1, .c_uv = 0, .normal = 2, .color = 0xFFFFFFFF}, // Back
+    {.a = 5, .b = 6, .c = 4, .a_uv = 0, .b_uv = 2, .c_uv = 3, .normal = 2, .color = 0xFFFFFFFF},
+    {.a = 1, .b = 7, .c = 0, .a_uv = 0, .b_uv = 2, .c_uv = 3, .normal = 3, .color = 0xFFFFFFFF}, // Left
+    {.a = 6, .b = 7, .c = 1, .a_uv = 1, .b_uv = 2, .c_uv = 0, .normal = 3, .color = 0xFFFFFFFF},
+    {.a = 6, .b = 2, .c = 1, .a_uv = 1, .b_uv = 3, .c_uv = 2, .normal = 4, .color = 0xFFFFFFFF}, // Top
+    {.a = 2, .b = 6, .c = 4, .a_uv = 3, .b_uv = 1, .c_uv = 0, .normal = 4, .color = 0xFFFFFFFF},
+    {.a = 0, .b = 5, .c = 7, .a_uv = 1, .b_uv = 3, .c_uv = 2, .normal = 5, .color = 0xFFFFFFFF}, // Bottom
+    {.a = 0, .b = 3, .c = 5, .a_uv = 1, .b_uv = 0, .c_uv = 3, .normal = 5, .color = 0xFFFFFFFF},
 };
 
 Mesh* init_mesh() {
@@ -47,6 +55,7 @@ Mesh* init_mesh() {
     mesh->vertices = NULL;
     mesh->normals = NULL;
     mesh->triangles = NULL;
+    mesh->uvs = NULL;
   }
   return mesh;
 }
@@ -55,13 +64,13 @@ void destroy_mesh(Mesh* mesh) {
   if (mesh != NULL) {
     dyn_array_free(mesh->vertices);
     dyn_array_free(mesh->normals);
+    dyn_array_free(mesh->uvs);
     dyn_array_free(mesh->triangles);
-
     free(mesh);
   }
 }
 
-size_t get_mesh_vertex_count(const Mesh* mesh) {
+size_t mesh_vertex_count(const Mesh* mesh) {
   ASSERT(mesh != NULL);
   if (mesh != NULL) {
     return dyn_array_length(mesh->vertices);
@@ -69,7 +78,7 @@ size_t get_mesh_vertex_count(const Mesh* mesh) {
   return 0;
 }
 
-size_t get_mesh_normal_count(const Mesh* mesh) {
+size_t mesh_normal_count(const Mesh* mesh) {
   ASSERT(mesh != NULL);
   if (mesh != NULL) {
     return dyn_array_length(mesh->normals);
@@ -77,7 +86,7 @@ size_t get_mesh_normal_count(const Mesh* mesh) {
   return 0;
 }
 
-size_t get_mesh_triangle_count(const Mesh* mesh) {
+size_t mesh_triangle_count(const Mesh* mesh) {
   ASSERT(mesh != NULL);
   if (mesh != NULL) {
     return dyn_array_length(mesh->triangles);
@@ -85,7 +94,15 @@ size_t get_mesh_triangle_count(const Mesh* mesh) {
   return 0;
 }
 
-bool load_cube_mesh(Mesh* mesh) {
+size_t mesh_uv_count(const Mesh* mesh) {
+  ASSERT(mesh != NULL);
+  if (mesh != NULL) {
+    return dyn_array_length(mesh->uvs);
+  }
+  return 0;
+}
+
+bool mesh_load_cube(Mesh* mesh) {
   ASSERT(mesh != NULL);
   if (mesh == NULL) {
     return false;
@@ -97,6 +114,9 @@ bool load_cube_mesh(Mesh* mesh) {
   for (int i = 0; i < NUM_CUBE_NORMALS; i++) {
     dyn_array_push_back(mesh->normals, cube_normals[i]);
   }
+  for (int i = 0; i < NUM_CUBE_UVS; i++) {
+    dyn_array_push_back(mesh->uvs, cube_uvs[i]);
+  }
   for (int i = 0; i < NUM_CUBE_TRIANGLES; i++) {
     dyn_array_push_back(mesh->triangles, cube_triangles[i]);
   }
@@ -104,7 +124,7 @@ bool load_cube_mesh(Mesh* mesh) {
   return true;
 }
 
-bool load_obj_mesh(Mesh* mesh, const char* obj_file_path) {
+bool mesh_load_obj(Mesh* mesh, const char* obj_file_path) {
   ASSERT(mesh != NULL);
   if (mesh == NULL) {
     return false;
@@ -138,21 +158,31 @@ bool load_obj_mesh(Mesh* mesh, const char* obj_file_path) {
         Vec3 normal = {.x = f[0], .y = f[1], .z = f[2]};
         dyn_array_push_back(mesh->normals, normal);
       }
+    } else if (strncmp(buf, "vt ", 3) == 0) {
+      float f[2] = {0.0f};
+
+      if (sscanf(buf, "vt %f %f\n", &f[0], &f[1]) == 2) {
+        Vec2 uv = {.x = f[0], .y = f[1]};
+        dyn_array_push_back(mesh->uvs, uv);
+      }
     } else if (strncmp(buf, "f ", 2) == 0) {
       int vertex_idx[3] = {0};
-      int texture_idx[3] = {0};
+      int uv_idx[3] = {0};
       int normal_idx[3] = {0};
 
       if (sscanf(buf, "f %i/%i/%i\t%i/%i/%i\t%i/%i/%i\n",
-                 &vertex_idx[0], &texture_idx[0], &normal_idx[0],
-                 &vertex_idx[1], &texture_idx[1], &normal_idx[1],
-                 &vertex_idx[2], &texture_idx[2], &normal_idx[2]) == 9) {
+                 &vertex_idx[0], &uv_idx[0], &normal_idx[0],
+                 &vertex_idx[1], &uv_idx[1], &normal_idx[1],
+                 &vertex_idx[2], &uv_idx[2], &normal_idx[2]) == 9) {
 
         TriangleFace tri = {
             .a = vertex_idx[0] - 1,
             .b = vertex_idx[1] - 1,
             .c = vertex_idx[2] - 1,
-            .normal = normal_idx[0] - 1, // FIXME:
+            .a_uv = uv_idx[0] - 1,
+            .b_uv = uv_idx[1] - 1,
+            .c_uv = uv_idx[2] - 1,
+            .normal = normal_idx[0] - 1,
             .color = 0xFFFFFFFF,
         };
 

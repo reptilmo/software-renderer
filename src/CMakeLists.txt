@@ -9,6 +9,8 @@ add_executable(renderer
     color.h
     mesh.h
     mesh.c
+    texture.h
+    texture.c
     display.h
     display.c
     sort.h

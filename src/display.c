@@ -1,5 +1,6 @@
 // display.c
 #include "display.h"
+#include "texture.h"
 
 
 Display* init_display(int width, int height, bool fullscreen) {
@@ -155,7 +156,7 @@ void draw_line_dda(Display* display, int x0, int y0, int x1, int y1, uint32_t co
   float py = (float)y0;
 
   for (int i = 0; i <= run_length; i++) {
-    const size_t offset = (size_t)display->width * (size_t)round(py) + (size_t)round(px);
+    const size_t offset = (size_t)display->width * (size_t)roundf(py) + (size_t)roundf(px);
     if (offset < 0 || offset >= display->pixel_buffer_len) {
       continue;
     }
@@ -164,12 +165,6 @@ void draw_line_dda(Display* display, int x0, int y0, int x1, int y1, uint32_t co
     px += sx;
     py += sy;
   }
-}
-
-inline void swap_int(int* a, int* b) {
-  int tmp = *b;
-  *b = *a;
-  *a = tmp;
 }
 
 static void draw_scanline(Display* display, int x0, int x1, int y, uint32_t color) {
@@ -203,7 +198,7 @@ static void draw_flat_bottom_triangle(Display* display, int x0, int y0, int x1, 
   float scanline_end = (float)x0;
 
   for (int y = y0; y <= y2; y++) {
-    draw_scanline(display, (int)round(scanline_start), (int)round(scanline_end), y, color);
+    draw_scanline(display, (int)roundf(scanline_start), (int)roundf(scanline_end), y, color);
     scanline_start += inv_slope_left;
     scanline_end += inv_slope_right;
   }
@@ -216,7 +211,7 @@ static void draw_flat_top_triangle(Display* display, int x0, int y0, int x1, int
   float scanline_end = (float)x2;
 
   for (int y = y2; y >= y0; y--) {
-    draw_scanline(display, (int)round(scanline_start), (int)round(scanline_end), y, color);
+    draw_scanline(display, (int)roundf(scanline_start), (int)roundf(scanline_end), y, color);
     scanline_start -= inv_slope_left;
     scanline_end -= inv_slope_right;
   }
@@ -249,5 +244,76 @@ void draw_triangle(Display* display, int x0, int y0, int x1, int y1, int x2, int
 
     draw_flat_bottom_triangle(display, x0, y0, x1, y1, xm, ym, color);
     draw_flat_top_triangle(display, xm, ym, x1, y1, x2, y2, color);
+  }
+}
+
+void draw_textured_triangle(Display* display, int x0, int y0, int x1, int y1, int x2, int y2, Vec2 a_uv, Vec2 b_uv, Vec2 c_uv, Texture* texture) {
+
+  if (y0 > y1) {
+    swap_int(&x0, &x1);
+    swap_int(&y0, &y1);
+    vec2_swap(&a_uv, &b_uv);
+  }
+
+  if (y1 > y2) {
+    swap_int(&x1, &x2);
+    swap_int(&y1, &y2);
+    vec2_swap(&b_uv, &c_uv);
+  }
+
+  if (y0 > y1) {
+    swap_int(&x0, &x1);
+    swap_int(&y0, &y1);
+    vec2_swap(&a_uv, &b_uv);
+  }
+
+  Vec2 a = {.x = (float)x0, .y = (float)y0};
+  Vec2 b = {.x = (float)x1, .y = (float)y1};
+  Vec2 c = {.x = (float)x2, .y = (float)y2};
+
+  float inv_slope_left = 0;
+  float inv_slope_right = 0;
+
+  if ((y1 - y0) != 0) {
+    inv_slope_left = (float)(x1 - x0) / abs(y1 - y0);
+  }
+
+  if ((y2 - y0) != 0) {
+    inv_slope_right = (float)(x2 - x0) / abs(y2 - y0);
+  }
+
+  for (int y = y0; y <= y1; y++) {
+    int x_start = (int)roundf(x1 + (y - y1) * inv_slope_left);
+    int x_end = (int)roundf(x0 + (y - y0) * inv_slope_right);
+
+    if (x_start > x_end) {
+      swap_int(&x_start, &x_end);
+    }
+
+    const int scanline = display->width * y;
+    for (int x = x_start; x <= x_end; x++) {
+      Vec2 pixel = {.x = (float)x, .y = (float)y};
+      display->pixel_buffer[scanline + x] = texture_sample(texture, pixel, a, b, c, a_uv, b_uv, c_uv);
+    }
+  }
+
+  inv_slope_left = 0;
+  if ((y2 - y1) != 0) {
+    inv_slope_left = (float)(x2 - x1) / abs(y2 - y1);
+  }
+
+  for (int y = y2; y >= y1; y--) {
+    int x_start = (int)roundf(x1 + (y - y1) * inv_slope_left);
+    int x_end = (int)roundf(x0 + (y - y0) * inv_slope_right);
+
+    if (x_start > x_end) {
+      swap_int(&x_start, &x_end);
+    }
+
+    const int scanline = display->width * y;
+    for (int x = x_start; x <= x_end; x++) {
+      Vec2 pixel = {.x = (float)x, .y = (float)y};
+      display->pixel_buffer[scanline + x] = texture_sample(texture, pixel, a, b, c, a_uv, b_uv, c_uv);
+    }
   }
 }

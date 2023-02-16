@@ -7,6 +7,7 @@
 #include "mat.h"
 
 #include "color.h"
+#include "texture.h"
 
 #define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
@@ -18,12 +19,15 @@ void render(void);
 
 Display* display = NULL;
 Renderer* renderer = NULL;
+Texture* texture = NULL;
+
 const Vec3 camera_position = {.x = 0, .y = 0, .z = 0};
 bool enable_backface_culling = true;
-bool enable_draw_fill = true;
+bool enable_draw_fill = false;
 bool enable_draw_wireframe = false;
 bool enable_draw_points = false;
-DrawMode draw_mode = DRAW_MODE_TRIANGLE_FILL;
+bool enable_texture_mapping = true;
+DrawMode draw_mode = DRAW_MODE_TEXTURE;
 
 Mesh* mesh = NULL;
 float mesh_scale = 1.0f;
@@ -57,6 +61,16 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  texture = init_texture();
+  if (texture == NULL) {
+    destroy_renderer(renderer);
+    destroy_display(display);
+    SDL_Quit();
+    return 1;
+  }
+
+  texture_load_checker_board(texture);
+
   renderer_camera_position(renderer, camera_position);
   renderer_clear_color(renderer, 0xFF000000);
   renderer_draw_mode(renderer, draw_mode);
@@ -64,6 +78,7 @@ int main(int argc, char* argv[]) {
 
   mesh = init_mesh();
   if (mesh == NULL) {
+    destroy_texture(texture);
     destroy_renderer(renderer);
     destroy_display(display);
     SDL_Quit();
@@ -72,9 +87,9 @@ int main(int argc, char* argv[]) {
 
   bool running = false;
   if (mesh_file != NULL) {
-    running = load_obj_mesh(mesh, mesh_file);
+    running = mesh_load_obj(mesh, mesh_file);
   } else {
-    running = load_cube_mesh(mesh);
+    running = mesh_load_cube(mesh);
   }
 
   while (running) {
@@ -91,6 +106,7 @@ int main(int argc, char* argv[]) {
   }
 
   destroy_mesh(mesh);
+  destroy_texture(texture);
   destroy_renderer(renderer);
   destroy_display(display);
   SDL_Quit();
@@ -175,7 +191,17 @@ void process_input(bool* running) {
         draw_mode |= DRAW_MODE_POINTS;
       }
       renderer_draw_mode(renderer, draw_mode);
+    } else if (event.key.keysym.scancode == SDL_SCANCODE_4) {
+      if (enable_texture_mapping) {
+        enable_texture_mapping = false;
+        draw_mode &= ~DRAW_MODE_TEXTURE;
+      } else {
+        enable_texture_mapping = true;
+        draw_mode |= DRAW_MODE_TEXTURE;
+      }
+      renderer_draw_mode(renderer, draw_mode);
     }
+
     break;
   default:
     break;
@@ -185,7 +211,7 @@ void process_input(bool* running) {
 void update(void) {
   ASSERT(mesh != NULL);
 
-  mesh_scale += 0.001f;
+  //mesh_scale += 0.001f;
   if (mesh_scale >= 2.0f) {
     mesh_scale = 1.0f;
   }
@@ -203,12 +229,12 @@ void update(void) {
   Mat4 translate = mat4_make_translate(0.0f, 0.0f, 5.0f);
   Mat4 transform = mat4_mul(mat4_mul(translate, rotate), scale);
 
-  const size_t mesh_vertex_count = get_mesh_vertex_count(mesh);
-  const size_t mesh_normal_count = get_mesh_normal_count(mesh);
+  const size_t vertex_count = mesh_vertex_count(mesh);
+  const size_t normal_count = mesh_normal_count(mesh);
 
   dyn_array_clear(transformed_mesh_vertices);
 
-  for (int i = 0; i < mesh_vertex_count; i++) {
+  for (int i = 0; i < vertex_count; i++) {
     Vec3 vertex = mesh->vertices[i];
     vertex = vec4_xyz(mat4_mul_vec4(transform, vec3_xyzw(vertex)));
 
@@ -217,7 +243,7 @@ void update(void) {
 
   dyn_array_clear(transformed_mesh_normals);
 
-  for (int i = 0; i < mesh_normal_count; i++) {
+  for (int i = 0; i < normal_count; i++) {
     Vec3 normal = vec4_xyz(mat4_mul_vec4(
       rotate,
       vec3_xyzw(mesh->normals[i])
@@ -229,16 +255,19 @@ void update(void) {
 
 void render(void) {
   ASSERT(renderer != NULL);
-
   renderer_begin_frame(renderer);
+
+  renderer_current_texture(renderer, texture);
+
   renderer_begin_triangles(
       renderer,
       mesh->triangles,
-      dyn_array_length(mesh->triangles),
+      mesh_triangle_count(mesh),
       transformed_mesh_vertices,
       dyn_array_length(transformed_mesh_vertices),
       transformed_mesh_normals,
-      dyn_array_length(transformed_mesh_normals));
+      dyn_array_length(transformed_mesh_normals),
+      mesh->uvs, mesh_uv_count(mesh));
 
   renderer_end_triangles(renderer);
   renderer_end_frame(renderer);

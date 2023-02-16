@@ -15,6 +15,11 @@ typedef struct Vec4 {
   float x, y, z, w;
 } Vec4;
 
+INLINE void vec2_swap(Vec2* a, Vec2* b) {
+  Vec2 tmp = {.x = a->x, .y = a->y};
+  *a = *b;
+  *b = tmp;
+}
 
 INLINE Vec2 vec2_add(Vec2 a, Vec2 b) {
   Vec2 result = {

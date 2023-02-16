@@ -23,5 +23,21 @@
   } while (0);
 #else
 #define ASSERT(condition) (condition)
-
 #endif
+
+INLINE void swap_int(int* a, int* b) {
+  int tmp = *a;
+  *a = *b;
+  *b = tmp;
+}
+
+INLINE void swap_float(float* a, float* b) {
+  float tmp = *a;
+  *a = *b;
+  *b = tmp;
+}
+
+INLINE bool nearly_zero(float f) {
+  ASSERT(0) // FIXME: Implement!
+  return true;
+}

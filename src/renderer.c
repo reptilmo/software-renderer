@@ -26,6 +26,7 @@ Renderer* init_renderer(Display* display) {
     if (renderer != NULL) {
       renderer->display = display;
       renderer->renderable_triangles = NULL;
+      renderer->current_texture = NULL;
       renderer->camera_position.x = 0.0f;
       renderer->camera_position.y = 0.0f;
       renderer->camera_position.z = 0.0f;
@@ -87,6 +88,13 @@ void renderer_clear_color(Renderer* renderer, uint32_t color) {
   }
 }
 
+void renderer_current_texture(Renderer* renderer, Texture* texture) {
+  ASSERT(renderer != NULL);
+  if (renderer != NULL) {
+    renderer->current_texture = texture;
+  }
+}
+
 void renderer_begin_frame(Renderer* renderer) {
   ASSERT(renderer != NULL);
 
@@ -101,7 +109,7 @@ void renderer_end_frame(Renderer* renderer) {
 }
 
 void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t num_faces,
-                              Vec3* vertices, size_t num_vertices, Vec3* normals, size_t num_normals) {
+  Vec3* vertices, size_t num_vertices, Vec3* normals, size_t num_normals, Vec2* uvs, size_t num_uvs) {
 
   ASSERT(renderer != NULL);
 
@@ -111,6 +119,10 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
     ASSERT(face.a < num_vertices);
     ASSERT(face.b < num_vertices);
     ASSERT(face.c < num_vertices);
+
+    ASSERT(face.a_uv < num_uvs);
+    ASSERT(face.b_uv < num_uvs);
+    ASSERT(face.c_uv < num_uvs);
 
     /*const Vec3 ab = vec3_normalize(vec3_sub(triangle.b, triangle.a));
       const Vec3 ac = vec3_normalize(vec3_sub(triangle.c, triangle.a));
@@ -127,6 +139,9 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
         .a = vertices[face.a],
         .b = vertices[face.b],
         .c = vertices[face.c],
+        .a_uv = uvs[face.a_uv],
+        .b_uv = uvs[face.b_uv],
+        .c_uv = uvs[face.c_uv],
         .color = color_to_u32(triangle_color),
     };
 
@@ -144,8 +159,8 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
 
   const size_t renderable_count = dyn_array_length(renderer->renderable_triangles);
 
-  insertion_sort(renderer->renderable_triangles, renderable_count,
-                 sizeof(Triangle), farther_triangle, swap_render_triangles);
+  //insertion_sort(renderer->renderable_triangles, renderable_count,
+  //                sizeof(Triangle), farther_triangle, swap_render_triangles);
 
   for (size_t i = 0; i < renderable_count; i++) {
     const Triangle triangle = renderer->renderable_triangles[i];
@@ -173,7 +188,12 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
     c.x += renderer->view_half_width;
     c.y += renderer->view_half_height;
 
-    if (renderer->draw_mode & DRAW_MODE_TRIANGLE_FILL) {
+    if (renderer->draw_mode & DRAW_MODE_TEXTURE && renderer->current_texture != NULL) {
+      draw_textured_triangle(renderer->display, a.x, a.y, b.x, b.y, c.x, c.y,
+                             triangle.a_uv, triangle.b_uv, triangle.c_uv, renderer->current_texture);
+    }
+
+    if (renderer->draw_mode & DRAW_MODE_TRIANGLE_FILL && !(renderer->draw_mode & DRAW_MODE_TEXTURE)) {
       draw_triangle(renderer->display, a.x, a.y, b.x, b.y, c.x, c.y, triangle.color);
     }
 

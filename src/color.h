@@ -9,10 +9,10 @@ typedef struct Color {
 
 INLINE Color color_from_u32(uint32_t c) {
   Color out = {
-      .a = (c & 0xFF000000) >> 24,
-      .r = (c & 0x00FF0000) >> 16,
-      .g = (c & 0x0000FF00) >> 8,
-      .b = (c & 0x000000FF) >> 0,
+      .a = (uint8_t)((c & 0xFF000000) >> 24),
+      .r = (uint8_t)((c & 0x00FF0000) >> 16),
+      .g = (uint8_t)((c & 0x0000FF00) >> 8),
+      .b = (uint8_t)((c & 0x000000FF) >> 0),
   };
   return out;
 }
