@@ -159,8 +159,8 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
 
   const size_t renderable_count = dyn_array_length(renderer->renderable_triangles);
 
-  //insertion_sort(renderer->renderable_triangles, renderable_count,
-  //                sizeof(Triangle), farther_triangle, swap_render_triangles);
+  insertion_sort(renderer->renderable_triangles, renderable_count,
+    sizeof(Triangle), farther_triangle, swap_render_triangles);
 
   for (size_t i = 0; i < renderable_count; i++) {
     const Triangle triangle = renderer->renderable_triangles[i];
@@ -189,8 +189,8 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
     c.y += renderer->view_half_height;
 
     if (renderer->draw_mode & DRAW_MODE_TEXTURE && renderer->current_texture != NULL) {
-      draw_textured_triangle(renderer->display, a.x, a.y, b.x, b.y, c.x, c.y,
-                             triangle.a_uv, triangle.b_uv, triangle.c_uv, renderer->current_texture);
+      draw_textured_triangle(renderer->display, vec4_xy(a), vec4_xy(b), vec4_xy(c),
+        triangle.a_uv, triangle.b_uv, triangle.c_uv, renderer->current_texture);
     }
 
     if (renderer->draw_mode & DRAW_MODE_TRIANGLE_FILL && !(renderer->draw_mode & DRAW_MODE_TEXTURE)) {

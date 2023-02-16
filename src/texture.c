@@ -69,17 +69,14 @@ bool texture_load_checker_board(Texture* texture) {
   return false;
 }
 
-uint32_t texture_sample(Texture* texture, Vec2 pixel, Vec2 a, Vec2 b, Vec2 c, Vec2 a_uv, Vec2 b_uv, Vec2 c_uv) {
-
-  const Vec2 AB = vec2_sub(b, a);
+uint32_t texture_sample(Texture* texture, Vec2 pixel, Vec2 a, Vec2 b, Vec2 c, Vec2 a_uv, Vec2 b_uv, Vec2 c_uv, float reciprocal_area) {
   const Vec2 AC = vec2_sub(c, a);
   const Vec2 AP = vec2_sub(pixel, a);
   const Vec2 PB = vec2_sub(b, pixel);
   const Vec2 PC = vec2_sub(c, pixel);
 
-  const float triangle_area_times_2 = AC.x * AB.y - AC.y * AB.x;
-  const float weight_a = (PC.x * PB.y - PC.y * PB.x) / triangle_area_times_2;
-  const float weight_b = (AC.x * AP.y - AC.y * AP.x) / triangle_area_times_2;
+  const float weight_a = (PC.x * PB.y - PC.y * PB.x) * reciprocal_area;
+  const float weight_b = (AC.x * AP.y - AC.y * AP.x) * reciprocal_area;
   const float weight_c = 1 - weight_a - weight_b;
 
   const float s = a_uv.x * weight_a + b_uv.x * weight_b + c_uv.x * weight_c;

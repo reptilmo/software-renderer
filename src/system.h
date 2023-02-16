@@ -2,6 +2,7 @@
 #pragma once
 
 #include <math.h>
+#include <float.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -37,7 +38,18 @@ INLINE void swap_float(float* a, float* b) {
   *b = tmp;
 }
 
-INLINE bool nearly_zero(float f) {
-  ASSERT(0) // FIXME: Implement!
-  return true;
+INLINE bool almost_equal(float a, float b, float tolerance) {
+  const float diff = fabsf(a - b);
+
+  a = fabsf(a);
+  b = fabsf(b);
+
+  const float largest = b > a ? b : a;
+
+  if (diff <= largest * tolerance) {
+    return true;
+  }
+
+  return false;
 }
+

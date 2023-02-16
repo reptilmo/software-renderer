@@ -257,6 +257,19 @@ void render(void) {
   ASSERT(renderer != NULL);
   renderer_begin_frame(renderer);
 
+  //Vec2 a_uv = {.x = 1.0f, .y = 1.0f};
+  //Vec2 b_uv = {.x = 0.0f, .y = 1.0f};
+  //Vec2 c_uv = {.x = 0.0f, .y = 0.0f};
+  //Vec2 d_uv = {.x = 1.0f, .y = 0.0f};
+
+  //Vec2 a = {.x = 383, .y = 401};
+  //Vec2 b = {.x = 386, .y = 410}; // 409
+  //Vec2 c = {.x = 410, .y = 473};
+
+
+  //draw_textured_triangle(display, a, b, c, a_uv, b_uv, c_uv, texture);
+
+
   renderer_current_texture(renderer, texture);
 
   renderer_begin_triangles(

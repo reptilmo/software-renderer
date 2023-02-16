@@ -26,4 +26,4 @@ void draw_rect(Display* display, int left, int top, int width, int height, uint3
 void draw_line_dda(Display* display, int x0, int y0, int x1, int y1, uint32_t color);
 void draw_triangle(Display* display, int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
 
-void draw_textured_triangle(Display* display, int x0, int y0, int x1, int y1, int x2, int y2, Vec2 a_uv, Vec2 b_uv, Vec2 c_uv, Texture* texture);
+void draw_textured_triangle(Display* display, Vec2 a, Vec2 b, Vec2 c, Vec2 a_uv, Vec2 b_uv, Vec2 c_uv, Texture* texture);

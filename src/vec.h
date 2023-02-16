@@ -166,6 +166,14 @@ INLINE Vec3 rotate_around_z(Vec3 v, float a) {
   return rotated;
 }
 
+INLINE Vec2 vec4_xy(Vec4 v) {
+  Vec2 out = {
+    .x = v.x,
+    .y = v.y,
+  };
+  return out;
+}
+
 INLINE Vec3 vec4_xyz(Vec4 v) {
   Vec3 out = {
     .x = v.x,
@@ -192,6 +200,5 @@ INLINE Vec4 perspective_divide(Vec4 p) {
     p.y *= w_factor;
     p.z *= w_factor;
   }
-
   return p;
 }

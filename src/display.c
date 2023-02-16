@@ -247,29 +247,38 @@ void draw_triangle(Display* display, int x0, int y0, int x1, int y1, int x2, int
   }
 }
 
-void draw_textured_triangle(Display* display, int x0, int y0, int x1, int y1, int x2, int y2, Vec2 a_uv, Vec2 b_uv, Vec2 c_uv, Texture* texture) {
+void draw_textured_triangle(Display* display, Vec2 a, Vec2 b, Vec2 c, Vec2 a_uv, Vec2 b_uv, Vec2 c_uv, Texture* texture) {
 
-  if (y0 > y1) {
-    swap_int(&x0, &x1);
-    swap_int(&y0, &y1);
+  if (a.y > b.y) {
+    vec2_swap(&a, &b);
     vec2_swap(&a_uv, &b_uv);
   }
 
-  if (y1 > y2) {
-    swap_int(&x1, &x2);
-    swap_int(&y1, &y2);
+  if (b.y > c.y) {
+    vec2_swap(&b, &c);
     vec2_swap(&b_uv, &c_uv);
   }
 
-  if (y0 > y1) {
-    swap_int(&x0, &x1);
-    swap_int(&y0, &y1);
+  if (a.y > b.y) {
+    vec2_swap(&a, &b);
     vec2_swap(&a_uv, &b_uv);
   }
 
-  Vec2 a = {.x = (float)x0, .y = (float)y0};
-  Vec2 b = {.x = (float)x1, .y = (float)y1};
-  Vec2 c = {.x = (float)x2, .y = (float)y2};
+  const Vec2 AB = vec2_sub(b, a);
+  const Vec2 AC = vec2_sub(c, a);
+  const float triangle_area_2 = AC.x * AB.y - AC.y * AB.x;
+  if (almost_equal(triangle_area_2, 0.0f, FLT_EPSILON)) {
+    return;
+  }
+
+  const float reciprocal_area = 1.0f / triangle_area_2;
+
+  const int x0 = (int)a.x;
+  const int y0 = (int)a.y;
+  const int x1 = (int)b.x;
+  const int y1 = (int)b.y;
+  const int x2 = (int)c.x;
+  const int y2 = (int)c.y;
 
   float inv_slope_left = 0;
   float inv_slope_right = 0;
@@ -293,7 +302,7 @@ void draw_textured_triangle(Display* display, int x0, int y0, int x1, int y1, in
     const int scanline = display->width * y;
     for (int x = x_start; x <= x_end; x++) {
       Vec2 pixel = {.x = (float)x, .y = (float)y};
-      display->pixel_buffer[scanline + x] = texture_sample(texture, pixel, a, b, c, a_uv, b_uv, c_uv);
+      display->pixel_buffer[scanline + x] = texture_sample(texture, pixel, a, b, c, a_uv, b_uv, c_uv, reciprocal_area);
     }
   }
 
@@ -313,7 +322,7 @@ void draw_textured_triangle(Display* display, int x0, int y0, int x1, int y1, in
     const int scanline = display->width * y;
     for (int x = x_start; x <= x_end; x++) {
       Vec2 pixel = {.x = (float)x, .y = (float)y};
-      display->pixel_buffer[scanline + x] = texture_sample(texture, pixel, a, b, c, a_uv, b_uv, c_uv);
+      display->pixel_buffer[scanline + x] = texture_sample(texture, pixel, a, b, c, a_uv, b_uv, c_uv, reciprocal_area);
     }
   }
 }
