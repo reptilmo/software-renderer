@@ -19,10 +19,10 @@ static Vec3 cube_vertices[NUM_CUBE_VERTICES] = {
 };
 
 static Vec2 cube_uvs[NUM_CUBE_UVS] = {
-  {.x = 1.0f, .y = 1.0f},
-  {.x = 0.0f, .y = 1.0f},
-  {.x = 0.0f, .y = 0.0f},
-  {.x = 1.0f, .y = 0.0f},
+    {.x = 1.0f, .y = 1.0f},
+    {.x = 0.0f, .y = 1.0f},
+    {.x = 0.0f, .y = 0.0f},
+    {.x = 1.0f, .y = 0.0f},
 };
 
 static Vec3 cube_normals[NUM_CUBE_NORMALS] = {

@@ -1,7 +1,7 @@
 // display.c
 #include "display.h"
+#include "color.h"
 #include "texture.h"
-
 
 Display* init_display(int width, int height, bool fullscreen) {
 
@@ -247,31 +247,34 @@ void draw_triangle(Display* display, int x0, int y0, int x1, int y1, int x2, int
   }
 }
 
-void draw_textured_triangle(Display* display, Vec2 a, Vec2 b, Vec2 c, Vec2 a_uv, Vec2 b_uv, Vec2 c_uv, Texture* texture) {
+void draw_textured_triangle(Display* display, Vec4 a, Vec4 b, Vec4 c, Vec2 a_uv, Vec2 b_uv, Vec2 c_uv, Texture* texture, float light_intensity) {
 
   if (a.y > b.y) {
-    vec2_swap(&a, &b);
+    vec4_swap(&a, &b);
     vec2_swap(&a_uv, &b_uv);
   }
 
   if (b.y > c.y) {
-    vec2_swap(&b, &c);
+    vec4_swap(&b, &c);
     vec2_swap(&b_uv, &c_uv);
   }
 
   if (a.y > b.y) {
-    vec2_swap(&a, &b);
+    vec4_swap(&a, &b);
     vec2_swap(&a_uv, &b_uv);
   }
 
-  const Vec2 AB = vec2_sub(b, a);
-  const Vec2 AC = vec2_sub(c, a);
+  const Vec2 AB = vec2_sub(vec4_xy(b), vec4_xy(a));
+  const Vec2 AC = vec2_sub(vec4_xy(c), vec4_xy(a));
   const float triangle_area_2 = AC.x * AB.y - AC.y * AB.x;
   if (almost_equal(triangle_area_2, 0.0f, FLT_EPSILON)) {
     return;
   }
 
   const float reciprocal_area = 1.0f / triangle_area_2;
+  a.w = 1.0f / a.w;
+  b.w = 1.0f / b.w;
+  c.w = 1.0f / c.w;
 
   const int x0 = (int)a.x;
   const int y0 = (int)a.y;
@@ -302,7 +305,9 @@ void draw_textured_triangle(Display* display, Vec2 a, Vec2 b, Vec2 c, Vec2 a_uv,
     const int scanline = display->width * y;
     for (int x = x_start; x <= x_end; x++) {
       Vec2 pixel = {.x = (float)x, .y = (float)y};
-      display->pixel_buffer[scanline + x] = texture_sample(texture, pixel, a, b, c, a_uv, b_uv, c_uv, reciprocal_area);
+      const uint32_t texel = texture_sample(texture, pixel, a, b, c, a_uv, b_uv, c_uv, reciprocal_area);
+      const Color color = color_apply_intensity(color_from_u32(texel), light_intensity);
+      display->pixel_buffer[scanline + x] = color_to_u32(color);
     }
   }
 
@@ -322,7 +327,9 @@ void draw_textured_triangle(Display* display, Vec2 a, Vec2 b, Vec2 c, Vec2 a_uv,
     const int scanline = display->width * y;
     for (int x = x_start; x <= x_end; x++) {
       Vec2 pixel = {.x = (float)x, .y = (float)y};
-      display->pixel_buffer[scanline + x] = texture_sample(texture, pixel, a, b, c, a_uv, b_uv, c_uv, reciprocal_area);
+      const uint32_t texel = texture_sample(texture, pixel, a, b, c, a_uv, b_uv, c_uv, reciprocal_area);
+      const Color color = color_apply_intensity(color_from_u32(texel), light_intensity);
+      display->pixel_buffer[scanline + x] = color_to_u32(color);
     }
   }
 }

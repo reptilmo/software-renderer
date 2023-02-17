@@ -1,10 +1,10 @@
 // main.c
 #include "darray.h"
 #include "display.h"
+#include "mat.h"
 #include "mesh.h"
 #include "renderer.h"
 #include "vec.h"
-#include "mat.h"
 
 #include "color.h"
 #include "texture.h"
@@ -211,7 +211,7 @@ void process_input(bool* running) {
 void update(void) {
   ASSERT(mesh != NULL);
 
-  //mesh_scale += 0.001f;
+  // mesh_scale += 0.001f;
   if (mesh_scale >= 2.0f) {
     mesh_scale = 1.0f;
   }
@@ -223,8 +223,8 @@ void update(void) {
   Mat4 scale = mat4_make_scale(mesh_scale, mesh_scale, mesh_scale);
 
   Mat4 rotate = mat4_mul(mat4_make_rotate_z(mesh_rotation.z),
-    mat4_mul(mat4_make_rotate_y(mesh_rotation.y),
-      mat4_make_rotate_x(mesh_rotation.x)));
+                         mat4_mul(mat4_make_rotate_y(mesh_rotation.y),
+                                  mat4_make_rotate_x(mesh_rotation.x)));
 
   Mat4 translate = mat4_make_translate(0.0f, 0.0f, 5.0f);
   Mat4 transform = mat4_mul(mat4_mul(translate, rotate), scale);
@@ -245,9 +245,8 @@ void update(void) {
 
   for (int i = 0; i < normal_count; i++) {
     Vec3 normal = vec4_xyz(mat4_mul_vec4(
-      rotate,
-      vec3_xyzw(mesh->normals[i])
-    ));
+        rotate,
+        vec3_xyzw(mesh->normals[i])));
 
     dyn_array_push_back(transformed_mesh_normals, normal);
   }
@@ -256,20 +255,6 @@ void update(void) {
 void render(void) {
   ASSERT(renderer != NULL);
   renderer_begin_frame(renderer);
-
-  //Vec2 a_uv = {.x = 1.0f, .y = 1.0f};
-  //Vec2 b_uv = {.x = 0.0f, .y = 1.0f};
-  //Vec2 c_uv = {.x = 0.0f, .y = 0.0f};
-  //Vec2 d_uv = {.x = 1.0f, .y = 0.0f};
-
-  //Vec2 a = {.x = 383, .y = 401};
-  //Vec2 b = {.x = 386, .y = 410}; // 409
-  //Vec2 c = {.x = 410, .y = 473};
-
-
-  //draw_textured_triangle(display, a, b, c, a_uv, b_uv, c_uv, texture);
-
-
   renderer_current_texture(renderer, texture);
 
   renderer_begin_triangles(

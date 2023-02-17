@@ -21,6 +21,17 @@ INLINE void vec2_swap(Vec2* a, Vec2* b) {
   *b = tmp;
 }
 
+INLINE void vec4_swap(Vec4* a, Vec4* b) {
+  Vec4 tmp = {
+      .x = a->x,
+      .y = a->y,
+      .z = a->z,
+      .w = a->w,
+  };
+  *a = *b;
+  *b = tmp;
+}
+
 INLINE Vec2 vec2_add(Vec2 a, Vec2 b) {
   Vec2 result = {
       .x = a.x + b.x,
@@ -168,27 +179,27 @@ INLINE Vec3 rotate_around_z(Vec3 v, float a) {
 
 INLINE Vec2 vec4_xy(Vec4 v) {
   Vec2 out = {
-    .x = v.x,
-    .y = v.y,
+      .x = v.x,
+      .y = v.y,
   };
   return out;
 }
 
 INLINE Vec3 vec4_xyz(Vec4 v) {
   Vec3 out = {
-    .x = v.x,
-    .y = v.y,
-    .z = v.z,
+      .x = v.x,
+      .y = v.y,
+      .z = v.z,
   };
   return out;
 }
 
 INLINE Vec4 vec3_xyzw(Vec3 v) {
   Vec4 out = {
-    .x = v.x,
-    .y = v.y,
-    .z = v.z,
-    1,
+      .x = v.x,
+      .y = v.y,
+      .z = v.z,
+      1,
   };
   return out;
 }

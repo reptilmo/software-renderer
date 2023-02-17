@@ -22,6 +22,9 @@ INLINE uint32_t color_to_u32(Color c) {
 }
 
 INLINE Color color_apply_intensity(Color c, float intensity) {
+  if (intensity < 0.001f) {
+    intensity = 0.001f;
+  }
   Color out = {
       .a = c.a,
       .r = (uint8_t)(c.r * intensity),

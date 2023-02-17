@@ -1,8 +1,8 @@
 // system.h
 #pragma once
 
-#include <math.h>
 #include <float.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -52,4 +52,3 @@ INLINE bool almost_equal(float a, float b, float tolerance) {
 
   return false;
 }
-

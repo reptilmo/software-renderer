@@ -2,15 +2,16 @@
 #pragma once
 
 #include "display.h"
-#include "texture.h"
-#include "mesh.h"
-#include "vec.h"
 #include "mat.h"
+#include "mesh.h"
+#include "texture.h"
+#include "vec.h"
 
 typedef struct Triangle {
   Vec3 a, b, c;
   Vec2 a_uv, b_uv, c_uv;
   uint32_t color;
+  float light_intensity;
 } Triangle;
 
 typedef enum CullMode {
@@ -21,8 +22,8 @@ typedef enum CullMode {
 typedef enum DrawMode {
   DRAW_MODE_TRIANGLE_FILL = 0b00000001u,
   DRAW_MODE_TRIANGLE_WIRE = 0b00000010u,
-  DRAW_MODE_POINTS        = 0b00000100u,
-  DRAW_MODE_TEXTURE       = 0b00001000u,
+  DRAW_MODE_POINTS = 0b00000100u,
+  DRAW_MODE_TEXTURE = 0b00001000u,
 } DrawMode;
 
 typedef struct Renderer {
@@ -53,6 +54,6 @@ void renderer_begin_frame(Renderer* renderer);
 void renderer_end_frame(Renderer* renderer);
 
 void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t num_faces,
-  Vec3* vertices, size_t num_vertices, Vec3* normals, size_t num_normals, Vec2* uvs, size_t num_uvs);
+                              Vec3* vertices, size_t num_vertices, Vec3* normals, size_t num_normals, Vec2* uvs, size_t num_uvs);
 
 void renderer_end_triangles(Renderer* renderer);
