@@ -99,7 +99,7 @@ void renderer_begin_frame(Renderer* renderer) {
   ASSERT(renderer != NULL);
 
   clear_pixel_buffer(renderer->display, renderer->clear_color);
-  draw_grid(renderer->display, 10, 0xFF333333);
+  //draw_grid(renderer->display, 10, 0xFF333333);
 }
 
 void renderer_end_frame(Renderer* renderer) {
