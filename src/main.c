@@ -4,9 +4,6 @@
 #include "mat.h"
 #include "mesh.h"
 #include "renderer.h"
-#include "vec.h"
-
-#include "color.h"
 #include "texture.h"
 
 #define FPS 60
@@ -218,7 +215,7 @@ void update(void) {
 
   mesh_rotation.x += 0.01f;
   mesh_rotation.y += 0.01f;
-  mesh_rotation.z += 0.01f;
+  // mesh_rotation.z += 0.01f;
 
   Mat4 scale = mat4_make_scale(mesh_scale, mesh_scale, mesh_scale);
 
@@ -255,8 +252,8 @@ void update(void) {
 void render(void) {
   ASSERT(renderer != NULL);
   renderer_begin_frame(renderer);
-  renderer_current_texture(renderer, texture);
 
+  renderer_current_texture(renderer, texture);
   renderer_begin_triangles(
       renderer,
       mesh->triangles,

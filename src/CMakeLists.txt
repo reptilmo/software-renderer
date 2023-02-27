@@ -15,6 +15,9 @@ add_executable(renderer
     display.c
     sort.h
     sort.c
+    triangle.h
+    texture_mapper.h
+    texture_mapper.c
     renderer.h
     renderer.c
     main.c

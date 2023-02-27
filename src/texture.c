@@ -137,22 +137,23 @@ bool texture_load_tga(Texture* texture, const char* tga_file_path) {
 }
 
 uint32_t texture_sample(Texture* texture, Vec2 pixel, Vec4 a, Vec4 b, Vec4 c, Vec2 a_uv, Vec2 b_uv, Vec2 c_uv, float reciprocal_area) {
-  const Vec2 AC = vec2_sub(vec4_xy(c), vec4_xy(a));
-  const Vec2 AP = vec2_sub(pixel, vec4_xy(a));
-  const Vec2 PB = vec2_sub(vec4_xy(b), pixel);
-  const Vec2 PC = vec2_sub(vec4_xy(c), pixel);
+  Vec2 AC, AP, PB, PC;
+  xy_sub(c, a, AC);
+  xy_sub(pixel, a, AP);
+  xy_sub(b, pixel, PB);
+  xy_sub(c, pixel, PC);
 
   const float weight_a = (PC.x * PB.y - PC.y * PB.x) * reciprocal_area;
   const float weight_b = (AC.x * AP.y - AC.y * AP.x) * reciprocal_area;
-  const float weight_c = 1 - weight_a - weight_b;
+  const float weight_c = 1.0f - weight_a - weight_b;
 
-  const float w = a.w * weight_a + b.w * weight_b + c.w * weight_c;
+  const float interpolated_w = 1.0f / (a.w * weight_a + b.w * weight_b + c.w * weight_c);
 
   const float s = a_uv.x * a.w * weight_a + b_uv.x * b.w * weight_b + c_uv.x * c.w * weight_c;
   const float t = a_uv.y * a.w * weight_a + b_uv.y * b.w * weight_b + c_uv.y * c.w * weight_c;
 
-  int x = abs((int)(s / w * texture->width));
-  int y = abs((int)(t / w * texture->height));
+  int x = (int)(fabsf(s * interpolated_w) * texture->width);
+  int y = (int)(fabsf(t * interpolated_w) * texture->height);
 
   if (x >= texture->width) {
     x = texture->width - 1;
@@ -161,9 +162,6 @@ uint32_t texture_sample(Texture* texture, Vec2 pixel, Vec4 a, Vec4 b, Vec4 c, Ve
   if (y >= texture->height) {
     y = texture->height - 1;
   }
-
-  ASSERT(x >= 0 && x < texture->width);
-  ASSERT(y >= 0 && y < texture->height);
 
   return texture->bitmap[texture->width * x + y];
 }

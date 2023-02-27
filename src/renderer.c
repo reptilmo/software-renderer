@@ -3,6 +3,7 @@
 #include "color.h"
 #include "darray.h"
 #include "sort.h"
+#include "texture_mapper.h"
 
 void swap_render_triangles(void* left, void* right) {
   Triangle tmp = *(Triangle*)left;
@@ -12,9 +13,15 @@ void swap_render_triangles(void* left, void* right) {
 
 bool farther_triangle(void* left, void* right) {
 
-  const float left_avg_z = (((Triangle*)left)->a.z + ((Triangle*)left)->b.z + ((Triangle*)left)->c.z) / 3.0f;
+  const float left_avg_z = (((Triangle*)left)->points[0].z +
+                            ((Triangle*)left)->points[1].z +
+                            ((Triangle*)left)->points[2].z) /
+                           3.0f;
 
-  const float right_avg_z = (((Triangle*)right)->a.z + ((Triangle*)right)->b.z + ((Triangle*)right)->c.z) / 3.0f;
+  const float right_avg_z = (((Triangle*)right)->points[0].z +
+                             ((Triangle*)right)->points[1].z +
+                             ((Triangle*)right)->points[2].z) /
+                            3.0f;
 
   return left_avg_z > right_avg_z;
 }
@@ -88,6 +95,13 @@ void renderer_clear_color(Renderer* renderer, uint32_t color) {
   }
 }
 
+void renderer_light_direction(Renderer* renderer, Vec3 light_direction) {
+  ASSERT(renderer != NULL);
+  if (renderer != NULL) {
+    renderer->light_direction = light_direction;
+  }
+}
+
 void renderer_current_texture(Renderer* renderer, Texture* texture) {
   ASSERT(renderer != NULL);
   if (renderer != NULL) {
@@ -97,14 +111,12 @@ void renderer_current_texture(Renderer* renderer, Texture* texture) {
 
 void renderer_begin_frame(Renderer* renderer) {
   ASSERT(renderer != NULL);
-
   clear_pixel_buffer(renderer->display, renderer->clear_color);
-  //draw_grid(renderer->display, 10, 0xFF333333);
+  // draw_grid(renderer->display, 10, 0xFF333333);
 }
 
 void renderer_end_frame(Renderer* renderer) {
   ASSERT(renderer != NULL);
-
   present_pixel_buffer(renderer->display);
 }
 
@@ -124,35 +136,29 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
     ASSERT(face.b_uv < num_uvs);
     ASSERT(face.c_uv < num_uvs);
 
-    /*const Vec3 ab = vec3_normalize(vec3_sub(triangle.b, triangle.a));
-      const Vec3 ac = vec3_normalize(vec3_sub(triangle.c, triangle.a));
-      const Vec3 triangle_normal = vec3_cross(ab, ac);*/
-
     ASSERT(face.normal < num_normals);
     const Vec3 triangle_normal = normals[face.normal];
-    const float light_intensity = -1.0f * vec3_dot(renderer->light_direction, triangle_normal);
-
-    const Triangle triangle = {
-        .a = vertices[face.a],
-        .b = vertices[face.b],
-        .c = vertices[face.c],
-        .a_uv = uvs[face.a_uv],
-        .b_uv = uvs[face.b_uv],
-        .c_uv = uvs[face.c_uv],
-        .color = face.color,
-        .light_intensity = light_intensity,
-    };
+    const Vec3 triangle_vertex_a = vertices[face.a];
 
     if (renderer->cull_mode == CULL_MODE_BACKFACE) {
-      const Vec3 camera_direction = vec3_sub(renderer->camera_position, triangle.a);
-      const float dot_product = vec3_dot(camera_direction, triangle_normal);
-
-      if (dot_product >= 0) {
-        dyn_array_push_back(renderer->renderable_triangles, triangle);
+      const Vec3 camera_direction = vec3_sub(&renderer->camera_position, &triangle_vertex_a);
+      if (vec3_dot(camera_direction, triangle_normal) < 0) {
+        continue;
       }
-    } else {
-      dyn_array_push_back(renderer->renderable_triangles, triangle);
     }
+
+    const float light_intensity = -1.0f * vec3_dot(renderer->light_direction, triangle_normal);
+
+    Triangle triangle;
+    triangle.points[0] = vec3_xyzw(vertices[face.a]);
+    triangle.points[1] = vec3_xyzw(vertices[face.b]);
+    triangle.points[2] = vec3_xyzw(vertices[face.c]);
+    triangle.uvs[0] = uvs[face.a_uv];
+    triangle.uvs[1] = uvs[face.b_uv];
+    triangle.uvs[2] = uvs[face.c_uv];
+    triangle.light_intensity = light_intensity;
+
+    dyn_array_push_back(renderer->renderable_triangles, triangle);
   }
 
   const size_t renderable_count = dyn_array_length(renderer->renderable_triangles);
@@ -161,11 +167,11 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
                  sizeof(Triangle), farther_triangle, swap_render_triangles);
 
   for (size_t i = 0; i < renderable_count; i++) {
-    const Triangle triangle = renderer->renderable_triangles[i];
+    Triangle* triangle = &renderer->renderable_triangles[i];
 
-    Vec4 a = mat4_mul_vec4(renderer->projection_matrix, vec3_xyzw(triangle.a));
-    Vec4 b = mat4_mul_vec4(renderer->projection_matrix, vec3_xyzw(triangle.b));
-    Vec4 c = mat4_mul_vec4(renderer->projection_matrix, vec3_xyzw(triangle.c));
+    Vec4 a = mat4_mul_vec4(renderer->projection_matrix, triangle->points[0]);
+    Vec4 b = mat4_mul_vec4(renderer->projection_matrix, triangle->points[1]);
+    Vec4 c = mat4_mul_vec4(renderer->projection_matrix, triangle->points[2]);
 
     a = perspective_divide(a);
     b = perspective_divide(b);
@@ -186,13 +192,16 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
     c.x += renderer->view_half_width;
     c.y += renderer->view_half_height;
 
+    triangle->points[0] = a;
+    triangle->points[1] = b;
+    triangle->points[2] = c;
+
     if (renderer->draw_mode & DRAW_MODE_TEXTURE && renderer->current_texture != NULL) {
-      draw_textured_triangle(renderer->display, a, b, c, triangle.a_uv, triangle.b_uv, triangle.c_uv, renderer->current_texture, triangle.light_intensity);
+      draw_textured_triangle(renderer->display, triangle, renderer->current_texture);
     }
 
     if (renderer->draw_mode & DRAW_MODE_TRIANGLE_FILL && !(renderer->draw_mode & DRAW_MODE_TEXTURE)) {
-      Color color = color_apply_intensity(color_from_u32(triangle.color), triangle.light_intensity);
-      draw_triangle(renderer->display, a.x, a.y, b.x, b.y, c.x, c.y, color_to_u32(color));
+      draw_triangle(renderer->display, a.x, a.y, b.x, b.y, c.x, c.y, color_apply_intensity(0xFFFFFFFF, triangle->light_intensity));
     }
 
     if (renderer->draw_mode & DRAW_MODE_TRIANGLE_WIRE) {

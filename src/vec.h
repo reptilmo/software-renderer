@@ -64,84 +64,93 @@ INLINE Vec2 vec2_div(Vec2 v, float s) {
   return result;
 }
 
-INLINE float vec2_len(Vec2 v) {
-  return sqrtf(v.x * v.x + v.y * v.y);
+INLINE float vec2_len(const Vec2* v) {
+  return sqrtf(v->x * v->x + v->y * v->y);
 }
 
 INLINE float vec2_dot(Vec2 a, Vec2 b) {
   return a.x * b.x + a.y * b.y;
 }
 
-INLINE Vec2 vec2_normalize(Vec2 v) {
+INLINE Vec2 vec2_normalized(const Vec2* v) {
   const float factor = 1.0f / vec2_len(v);
-  Vec2 result = {
-      .x = v.x * factor,
-      .y = v.y * factor,
+  return (Vec2){
+      .x = v->x * factor,
+      .y = v->y * factor,
   };
-  return result;
 }
 
-INLINE Vec3 vec3_add(Vec3 a, Vec3 b) {
-  Vec3 result = {
-      .x = a.x + b.x,
-      .y = a.y + b.y,
-      .z = a.z + b.z,
+INLINE Vec3 vec3_add(const Vec3* a, const Vec3* b) {
+  return (Vec3){
+      .x = a->x + b->x,
+      .y = a->y + b->y,
+      .z = a->z + b->z,
   };
-  return result;
 }
 
-INLINE Vec3 vec3_sub(Vec3 a, Vec3 b) {
-  Vec3 result = {
-      .x = a.x - b.x,
-      .y = a.y - b.y,
-      .z = a.z - b.z,
+INLINE Vec3 vec3_sub(const Vec3* a, const Vec3* b) {
+  return (Vec3){
+      .x = a->x - b->x,
+      .y = a->y - b->y,
+      .z = a->z - b->z,
   };
-  return result;
 }
 
-INLINE Vec3 vec3_mul(Vec3 v, float s) {
-  Vec3 result = {
-      .x = v.x * s,
-      .y = v.y * s,
-      .z = v.z * s,
+INLINE Vec3 vec3_mul_vec3(const Vec3* a, const Vec3* b) {
+  return (Vec3){
+      .x = a->x * b->x,
+      .y = a->y * b->y,
+      .z = a->z * b->z,
   };
-  return result;
 }
 
-INLINE Vec3 vec3_div(Vec3 v, float s) {
-  Vec3 result = {
-      .x = v.x / s,
-      .y = v.y / s,
-      .z = v.z / s,
+INLINE Vec3 vec3_mul(const Vec3* v, float s) {
+  return (Vec3){
+      .x = v->x * s,
+      .y = v->y * s,
+      .z = v->z * s,
   };
-  return result;
 }
 
-INLINE float vec3_len(Vec3 v) {
-  return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+INLINE Vec3 vec3_div(const Vec3* v, float s) {
+  return (Vec3){
+      .x = v->x / s,
+      .y = v->y / s,
+      .z = v->z / s,
+  };
+}
+
+INLINE Vec3 vec3_lerp(const Vec3* start, const Vec3* end, float t) {
+  return (Vec3){
+      .x = start->x + t * (end->x - start->x),
+      .y = start->y + t * (end->y - start->y),
+      .z = start->z + t * (end->z - start->z),
+  };
+}
+
+INLINE float vec3_len(const Vec3* v) {
+  return sqrtf(v->x * v->x + v->y * v->y + v->z * v->z);
 }
 
 INLINE Vec3 vec3_cross(Vec3 a, Vec3 b) {
-  Vec3 result = {
+  return (Vec3){
       .x = a.y * b.z - a.z * b.y,
       .y = a.z * b.x - a.x * b.z,
       .z = a.x * b.y - b.y * b.x,
   };
-  return result;
 }
 
 INLINE float vec3_dot(Vec3 a, Vec3 b) {
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-INLINE Vec3 vec3_normalize(Vec3 v) {
+INLINE Vec3 vec3_normalize(const Vec3* v) {
   const float factor = 1.0f / vec3_len(v);
-  Vec3 result = {
-      .x = v.x * factor,
-      .y = v.y * factor,
-      .z = v.z * factor,
+  return (Vec3){
+      .x = v->x * factor,
+      .y = v->y * factor,
+      .z = v->z * factor,
   };
-  return result;
 }
 
 INLINE Vec3 rotate_around_x(Vec3 v, float a) {
@@ -178,30 +187,29 @@ INLINE Vec3 rotate_around_z(Vec3 v, float a) {
 }
 
 INLINE Vec2 vec4_xy(Vec4 v) {
-  Vec2 out = {
+  return *(Vec2*)(&v);
+  /*Vec2 out = {
       .x = v.x,
       .y = v.y,
   };
-  return out;
+  return out;*/
 }
 
 INLINE Vec3 vec4_xyz(Vec4 v) {
-  Vec3 out = {
+  return (Vec3){
       .x = v.x,
       .y = v.y,
       .z = v.z,
   };
-  return out;
 }
 
 INLINE Vec4 vec3_xyzw(Vec3 v) {
-  Vec4 out = {
+  return (Vec4){
       .x = v.x,
       .y = v.y,
       .z = v.z,
       1,
   };
-  return out;
 }
 
 INLINE Vec4 perspective_divide(Vec4 p) {
@@ -213,3 +221,10 @@ INLINE Vec4 perspective_divide(Vec4 p) {
   }
   return p;
 }
+
+// FIXME:
+#define xy_sub(a, b, c)    \
+  {                        \
+    (c).x = (a).x - (b).x; \
+    (c).y = (a).y - (b).y; \
+  }

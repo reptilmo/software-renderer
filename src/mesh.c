@@ -35,18 +35,18 @@ static Vec3 cube_normals[NUM_CUBE_NORMALS] = {
 };
 
 static TriangleFace cube_triangles[NUM_CUBE_TRIANGLES] = {
-    {.a = 1, .b = 3, .c = 0, .a_uv = 1, .b_uv = 3, .c_uv = 2, .normal = 0, .color = 0xFFFFFFFF}, // Front
-    {.a = 3, .b = 1, .c = 2, .a_uv = 3, .b_uv = 1, .c_uv = 0, .normal = 0, .color = 0xFFFFFFFF},
-    {.a = 3, .b = 2, .c = 4, .a_uv = 2, .b_uv = 1, .c_uv = 0, .normal = 1, .color = 0xFFFFFFFF}, // Right
-    {.a = 4, .b = 5, .c = 3, .a_uv = 2, .b_uv = 3, .c_uv = 0, .normal = 1, .color = 0xFFFFFFFF},
-    {.a = 6, .b = 7, .c = 5, .a_uv = 2, .b_uv = 1, .c_uv = 0, .normal = 2, .color = 0xFFFFFFFF}, // Back
-    {.a = 5, .b = 6, .c = 4, .a_uv = 0, .b_uv = 2, .c_uv = 3, .normal = 2, .color = 0xFFFFFFFF},
-    {.a = 1, .b = 7, .c = 0, .a_uv = 0, .b_uv = 2, .c_uv = 3, .normal = 3, .color = 0xFFFFFFFF}, // Left
-    {.a = 6, .b = 7, .c = 1, .a_uv = 1, .b_uv = 2, .c_uv = 0, .normal = 3, .color = 0xFFFFFFFF},
-    {.a = 6, .b = 2, .c = 1, .a_uv = 1, .b_uv = 3, .c_uv = 2, .normal = 4, .color = 0xFFFFFFFF}, // Top
-    {.a = 2, .b = 6, .c = 4, .a_uv = 3, .b_uv = 1, .c_uv = 0, .normal = 4, .color = 0xFFFFFFFF},
-    {.a = 0, .b = 5, .c = 7, .a_uv = 1, .b_uv = 3, .c_uv = 2, .normal = 5, .color = 0xFFFFFFFF}, // Bottom
-    {.a = 0, .b = 3, .c = 5, .a_uv = 1, .b_uv = 0, .c_uv = 3, .normal = 5, .color = 0xFFFFFFFF},
+    {.a = 1, .b = 3, .c = 0, .a_uv = 1, .b_uv = 3, .normal = 0}, // Front
+    {.a = 3, .b = 1, .c = 2, .a_uv = 3, .b_uv = 1, .normal = 0},
+    {.a = 3, .b = 2, .c = 4, .a_uv = 2, .b_uv = 1, .normal = 1}, // Right
+    {.a = 4, .b = 5, .c = 3, .a_uv = 2, .b_uv = 3, .normal = 1},
+    {.a = 6, .b = 7, .c = 5, .a_uv = 2, .b_uv = 1, .normal = 2}, // Back
+    {.a = 5, .b = 6, .c = 4, .a_uv = 0, .b_uv = 2, .normal = 2},
+    {.a = 1, .b = 7, .c = 0, .a_uv = 0, .b_uv = 2, .normal = 3}, // Left
+    {.a = 6, .b = 7, .c = 1, .a_uv = 1, .b_uv = 2, .normal = 3},
+    {.a = 6, .b = 2, .c = 1, .a_uv = 1, .b_uv = 3, .normal = 4}, // Top
+    {.a = 2, .b = 6, .c = 4, .a_uv = 3, .b_uv = 1, .normal = 4},
+    {.a = 0, .b = 5, .c = 7, .a_uv = 1, .b_uv = 3, .normal = 5}, // Bottom
+    {.a = 0, .b = 3, .c = 5, .a_uv = 1, .b_uv = 0, .normal = 5},
 };
 
 Mesh* init_mesh() {
@@ -66,6 +66,7 @@ void destroy_mesh(Mesh* mesh) {
     dyn_array_free(mesh->normals);
     dyn_array_free(mesh->uvs);
     dyn_array_free(mesh->triangles);
+
     free(mesh);
   }
 }
@@ -162,7 +163,7 @@ bool mesh_load_obj(Mesh* mesh, const char* obj_file_path) {
       float f[2] = {0.0f};
 
       if (sscanf(buf, "vt %f %f\n", &f[0], &f[1]) == 2) {
-        Vec2 uv = {.x = f[0], .y = f[1]};
+        Vec2 uv = {.x = f[0], .y = 1.0f - f[1]};
         dyn_array_push_back(mesh->uvs, uv);
       }
     } else if (strncmp(buf, "f ", 2) == 0) {
@@ -183,7 +184,6 @@ bool mesh_load_obj(Mesh* mesh, const char* obj_file_path) {
             .b_uv = uv_idx[1] - 1,
             .c_uv = uv_idx[2] - 1,
             .normal = normal_idx[0] - 1,
-            .color = 0xFFFFFFFF,
         };
 
         dyn_array_push_back(mesh->triangles, tri);

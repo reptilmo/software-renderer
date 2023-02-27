@@ -3,33 +3,18 @@
 
 #include "system.h"
 
-typedef struct Color {
-  uint8_t a, r, g, b;
-} Color;
-
-INLINE Color color_from_u32(uint32_t c) {
-  Color out = {
-      .a = (uint8_t)((c & 0xFF000000) >> 24),
-      .r = (uint8_t)((c & 0x00FF0000) >> 16),
-      .g = (uint8_t)((c & 0x0000FF00) >> 8),
-      .b = (uint8_t)((c & 0x000000FF) >> 0),
-  };
-  return out;
-}
-
-INLINE uint32_t color_to_u32(Color c) {
-  return (c.a << 24) | (c.r << 16) | (c.g << 8) | (c.b << 0);
-}
-
-INLINE Color color_apply_intensity(Color c, float intensity) {
-  if (intensity < 0.001f) {
-    intensity = 0.001f;
+INLINE uint32_t color_apply_intensity(uint32_t color, float intencity) {
+  if (intencity < 0.0f) {
+    intencity = 0.0f;
   }
-  Color out = {
-      .a = c.a,
-      .r = (uint8_t)(c.r * intensity),
-      .g = (uint8_t)(c.g * intensity),
-      .b = (uint8_t)(c.b * intensity),
-  };
-  return out;
+
+  const uint32_t a = (color & 0xFF000000) >> 24;
+  const uint32_t r = (color & 0x00FF0000) >> 16;
+  const uint32_t g = (color & 0x0000FF00) >> 8;
+  const uint32_t b = (color & 0x000000FF) >> 0;
+
+  return ((uint32_t)(a * intencity) << 24) |
+         ((uint32_t)(r * intencity) << 16) |
+         ((uint32_t)(g * intencity) << 8) |
+         ((uint32_t)(b * intencity) << 0);
 }

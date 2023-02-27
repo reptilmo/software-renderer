@@ -8,7 +8,6 @@ typedef struct TriangleFace {
   int a, b, c;
   int a_uv, b_uv, c_uv;
   int normal;
-  uint32_t color;
 } TriangleFace;
 
 typedef struct Mesh {

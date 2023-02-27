@@ -26,6 +26,12 @@
 #define ASSERT(condition) (condition)
 #endif
 
+#define FABS(f)                                   \
+  {                                               \
+    uint32_t u = *(uint32_t*)(&(f)) & 0x7fffffff; \
+    return *(float*)(&u);                         \
+  }
+
 INLINE void swap_int(int* a, int* b) {
   int tmp = *a;
   *a = *b;

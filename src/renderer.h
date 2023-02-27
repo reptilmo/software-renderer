@@ -5,14 +5,7 @@
 #include "mat.h"
 #include "mesh.h"
 #include "texture.h"
-#include "vec.h"
-
-typedef struct Triangle {
-  Vec3 a, b, c;
-  Vec2 a_uv, b_uv, c_uv;
-  uint32_t color;
-  float light_intensity;
-} Triangle;
+#include "triangle.h"
 
 typedef enum CullMode {
   CULL_MODE_NONE = 0,
