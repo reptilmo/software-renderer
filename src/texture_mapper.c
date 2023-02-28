@@ -87,11 +87,12 @@ static inline void edge_step(Edge* edge) {
 
 static inline void draw_scan_line(Display* display, const Gradients* gradients, const Edge* left, const Edge* right, const Texture* texture, float intensity) {
   const int x_start = (int)ceilf(left->real_x);
-  const int x_end = (int)ceilf(right->real_x);
-
+  const int width = (int)ceilf(right->real_x) - x_start;
   const float x_prestep = x_start - left->real_x;
-  uint32_t* dest_bits = display->pixel_buffer + display->width * left->y + x_start;
-  uint32_t* src_bits = texture->bitmap;
+
+  uint32_t* pixel_bits = display->pixel_buffer + display->width * left->y + x_start;
+  float* depth_bits = display->depth_buffer + display->width * left->y + x_start;
+  uint32_t* texture_bits = texture->bitmap;
 
   const int scale_width = texture->width - 1;
   const int scale_height = texture->height - 1;
@@ -100,18 +101,36 @@ static inline void draw_scan_line(Display* display, const Gradients* gradients, 
   float u_over_w = left->u_over_w + x_prestep * gradients->du_over_w_dx;
   float v_over_w = left->v_over_w + x_prestep * gradients->dv_over_w_dx;
 
-  for (int i = x_start; i < x_end; i++) {
+  for (int x = 0; x < width; x++) {
     const float w = 1.0f / one_over_w;
+
     const float u = u_over_w * w;
     const float v = v_over_w * w;
 
-    const int iu = (int)(u * scale_width + 0.5f);
-    const int iv = (int)(v * scale_height + 0.5f);
+    int iu = (int)(u * scale_width + 0.5f);
+    int iv = (int)(v * scale_height + 0.5f);
 
-    ASSERT(iu >= 0 && iu < texture->width);
-    ASSERT(iv >= 0 && iv < texture->height);
+    // FIXME: Not sure what's going on with my fill convention here.
+    if (iu < 0) {
+      iu = 0;
+    }
 
-    *(dest_bits++) = color_apply_intensity(*(src_bits + (texture->width * iv) + iu), intensity);
+    if (iu > scale_width) {
+      iu = scale_width;
+    }
+
+    if (iv < 0) {
+      iv = 0;
+    }
+
+    if (iv > scale_height) {
+      iv = scale_height;
+    }
+
+    if (one_over_w > *(depth_bits + x)) {
+      *(pixel_bits + x) = color_apply_intensity(*(texture_bits + (texture->width * iv) + iu), intensity);
+      *(depth_bits + x) = one_over_w;
+    }
 
     one_over_w += gradients->one_over_w_dx;
     u_over_w += gradients->du_over_w_dx;
@@ -119,7 +138,6 @@ static inline void draw_scan_line(Display* display, const Gradients* gradients, 
   }
 }
 
-void draw_textured_triangle(Display* display, const Triangle* triangle, const Texture* texture);
 void draw_textured_triangle(Display* display, const Triangle* triangle, const Texture* texture) {
   int8_t min, mid, max;
 

@@ -135,7 +135,7 @@ bool texture_load_tga(Texture* texture, const char* tga_file_path) {
 
   return true;
 }
-
+/**
 uint32_t texture_sample(Texture* texture, Vec2 pixel, Vec4 a, Vec4 b, Vec4 c, Vec2 a_uv, Vec2 b_uv, Vec2 c_uv, float reciprocal_area) {
   Vec2 AC, AP, PB, PC;
   xy_sub(c, a, AC);
@@ -165,3 +165,4 @@ uint32_t texture_sample(Texture* texture, Vec2 pixel, Vec4 a, Vec4 b, Vec4 c, Ve
 
   return texture->bitmap[texture->width * x + y];
 }
+**/

@@ -233,7 +233,8 @@ void update(void) {
 
   for (int i = 0; i < vertex_count; i++) {
     Vec3 vertex = mesh->vertices[i];
-    vertex = vec4_xyz(mat4_mul_vec4(transform, vec3_xyzw(vertex)));
+    Vec4 transformed = mat4_mul_vec4(transform, vec3_xyzw(&vertex));
+    vertex = vec4_xyz(&transformed);
 
     dyn_array_push_back(transformed_mesh_vertices, vertex);
   }
@@ -241,9 +242,9 @@ void update(void) {
   dyn_array_clear(transformed_mesh_normals);
 
   for (int i = 0; i < normal_count; i++) {
-    Vec3 normal = vec4_xyz(mat4_mul_vec4(
-        rotate,
-        vec3_xyzw(mesh->normals[i])));
+    Vec3 normal = mesh->normals[i];
+    Vec4 transformed = mat4_mul_vec4(rotate, vec3_xyzw(&normal));
+    normal = vec4_xyz(&transformed);
 
     dyn_array_push_back(transformed_mesh_normals, normal);
   }

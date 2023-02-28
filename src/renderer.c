@@ -111,6 +111,7 @@ void renderer_current_texture(Renderer* renderer, Texture* texture) {
 
 void renderer_begin_frame(Renderer* renderer) {
   ASSERT(renderer != NULL);
+  clear_depth_buffer(renderer->display, 0.0f);
   clear_pixel_buffer(renderer->display, renderer->clear_color);
   // draw_grid(renderer->display, 10, 0xFF333333);
 }
@@ -118,6 +119,7 @@ void renderer_begin_frame(Renderer* renderer) {
 void renderer_end_frame(Renderer* renderer) {
   ASSERT(renderer != NULL);
   present_pixel_buffer(renderer->display);
+  // present_depth_buffer(renderer->display);
 }
 
 void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t num_faces,
@@ -142,17 +144,17 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
 
     if (renderer->cull_mode == CULL_MODE_BACKFACE) {
       const Vec3 camera_direction = vec3_sub(&renderer->camera_position, &triangle_vertex_a);
-      if (vec3_dot(camera_direction, triangle_normal) < 0) {
+      if (vec3_dot(&camera_direction, &triangle_normal) < 0) {
         continue;
       }
     }
 
-    const float light_intensity = -1.0f * vec3_dot(renderer->light_direction, triangle_normal);
+    const float light_intensity = -1.0f * vec3_dot(&renderer->light_direction, &triangle_normal);
 
     Triangle triangle;
-    triangle.points[0] = vec3_xyzw(vertices[face.a]);
-    triangle.points[1] = vec3_xyzw(vertices[face.b]);
-    triangle.points[2] = vec3_xyzw(vertices[face.c]);
+    triangle.points[0] = vec3_xyzw(&vertices[face.a]);
+    triangle.points[1] = vec3_xyzw(&vertices[face.b]);
+    triangle.points[2] = vec3_xyzw(&vertices[face.c]);
     triangle.uvs[0] = uvs[face.a_uv];
     triangle.uvs[1] = uvs[face.b_uv];
     triangle.uvs[2] = uvs[face.c_uv];
@@ -163,8 +165,8 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
 
   const size_t renderable_count = dyn_array_length(renderer->renderable_triangles);
 
-  insertion_sort(renderer->renderable_triangles, renderable_count,
-                 sizeof(Triangle), farther_triangle, swap_render_triangles);
+  /*insertion_sort(renderer->renderable_triangles, renderable_count,
+                 sizeof(Triangle), farther_triangle, swap_render_triangles);*/
 
   for (size_t i = 0; i < renderable_count; i++) {
     Triangle* triangle = &renderer->renderable_triangles[i];
@@ -173,9 +175,9 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
     Vec4 b = mat4_mul_vec4(renderer->projection_matrix, triangle->points[1]);
     Vec4 c = mat4_mul_vec4(renderer->projection_matrix, triangle->points[2]);
 
-    a = perspective_divide(a);
-    b = perspective_divide(b);
-    c = perspective_divide(c);
+    a = perspective_divide(&a);
+    b = perspective_divide(&b);
+    c = perspective_divide(&c);
 
     // Scale and translate from NDC space to viewport
     a.x *= renderer->view_half_width;

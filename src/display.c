@@ -11,6 +11,7 @@ Display* init_display(int width, int height, bool fullscreen) {
     return NULL;
   }
 
+  memset(display, 0, sizeof(Display));
   display->width = width;
   display->height = height;
   display->fullscreen = fullscreen;
@@ -63,12 +64,23 @@ Display* init_display(int width, int height, bool fullscreen) {
     return NULL;
   }
 
+  display->depth_buffer = (float*)malloc(sizeof(float) * display->pixel_buffer_len);
+  if (display->depth_buffer == NULL) {
+    fprintf(stderr, "Failed to allocate depth buffer!\n");
+    destroy_display(display);
+    return NULL;
+  }
+
   return display;
 }
 
 void destroy_display(Display* display) {
   ASSERT(display != NULL);
   if (display != NULL) {
+    if (display->depth_buffer != NULL) {
+      free(display->depth_buffer);
+    }
+
     if (display->pixel_buffer != NULL) {
       free(display->pixel_buffer);
     }
@@ -90,14 +102,37 @@ void destroy_display(Display* display) {
 }
 
 void clear_pixel_buffer(Display* display, uint32_t color) {
-  const int len = display->width * display->height;
-
-  for (int i = 0; i < len; i++) {
+  const size_t len = display->pixel_buffer_len;
+  for (size_t i = 0; i < len; i++) {
     display->pixel_buffer[i] = color;
   }
 }
 
 void present_pixel_buffer(Display* display) {
+  SDL_UpdateTexture(
+      display->pixel_buffer_texture,
+      NULL,
+      display->pixel_buffer,
+      (int)display->width * sizeof(uint32_t));
+
+  SDL_RenderCopy(display->renderer, display->pixel_buffer_texture, NULL, NULL);
+  SDL_RenderPresent(display->renderer);
+}
+
+void clear_depth_buffer(Display* display, float value) {
+  const size_t len = display->pixel_buffer_len;
+  for (int i = 0; i < len; i++) {
+    display->depth_buffer[i] = value;
+  }
+}
+
+void present_depth_buffer(Display* display) {
+  const size_t len = display->pixel_buffer_len;
+  for (int i = 0; i < len; i++) {
+    uint32_t value = (uint32_t)(display->depth_buffer[i] * 255.0f);
+    display->pixel_buffer[i] = (255 << 24 | value << 16 | value << 8 | value);
+  }
+
   SDL_UpdateTexture(
       display->pixel_buffer_texture,
       NULL,
