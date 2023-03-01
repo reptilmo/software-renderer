@@ -6,19 +6,15 @@
 #include "renderer.h"
 #include "texture.h"
 
-#define FPS 60
-#define FRAME_TARGET_TIME (1000 / FPS)
-
 const char* process_command_line(int argc, char* argv[], int* width, int* height, bool* fullscreen);
 void process_input(bool* running);
-void update(void);
+void update(float delta_time);
 void render(void);
 
 Display* display = NULL;
 Renderer* renderer = NULL;
 Texture* texture = NULL;
 
-const Vec3 camera_position = {.x = 0, .y = 0, .z = 0};
 bool enable_backface_culling = true;
 bool enable_draw_fill = false;
 bool enable_draw_wireframe = false;
@@ -27,12 +23,10 @@ bool enable_texture_mapping = true;
 DrawMode draw_mode = DRAW_MODE_TEXTURE;
 
 Mesh* mesh = NULL;
-float mesh_scale = 1.0f;
 Vec3 mesh_rotation = {.x = 0, .y = 0, .z = 0};
 
 Vec3* transformed_mesh_vertices = NULL;
 Vec3* transformed_mesh_normals = NULL;
-uint32_t previous_frame_time = 0;
 
 int main(int argc, char* argv[]) {
   int width = 800;
@@ -89,16 +83,16 @@ int main(int argc, char* argv[]) {
     running = mesh_load_cube(mesh);
   }
 
+  int previous_frame_time = 0;
+  int delta_time = 0;
+
   while (running) {
     process_input(&running);
 
-    int wait_next_frame = FRAME_TARGET_TIME - (SDL_GetTicks() - previous_frame_time);
-    if (wait_next_frame > 0 && wait_next_frame <= FRAME_TARGET_TIME) {
-      SDL_Delay((uint32_t)wait_next_frame);
-    }
+    delta_time = SDL_GetTicks() - previous_frame_time;
     previous_frame_time = SDL_GetTicks();
 
-    update();
+    update(delta_time / 10.f);
     render();
   }
 
@@ -112,7 +106,6 @@ int main(int argc, char* argv[]) {
 }
 
 const char* process_command_line(int argc, char* argv[], int* width, int* height, bool* fullscreen) {
-
   int requested_width = 0;
   int requested_height = 0;
   bool requested_fullscreen = false;
@@ -205,31 +198,32 @@ void process_input(bool* running) {
   }
 }
 
-void update(void) {
+void update(float dt) {
   ASSERT(mesh != NULL);
 
-  // mesh_scale += 0.001f;
-  if (mesh_scale >= 2.0f) {
-    mesh_scale = 1.0f;
-  }
-
-  mesh_rotation.x += 0.01f;
-  mesh_rotation.y += 0.01f;
-  // mesh_rotation.z += 0.01f;
-
-  Mat4 scale = mat4_make_scale(mesh_scale, mesh_scale, mesh_scale);
+  mesh_rotation.x += 0.01f * dt;
+  mesh_rotation.y += 0.01f * dt;
+  mesh_rotation.z += 0.01f * dt;
 
   Mat4 rotate = mat4_mul(mat4_make_rotate_z(mesh_rotation.z),
                          mat4_mul(mat4_make_rotate_y(mesh_rotation.y),
                                   mat4_make_rotate_x(mesh_rotation.x)));
 
-  Mat4 translate = mat4_make_translate(0.0f, 0.0f, 5.0f);
-  Mat4 transform = mat4_mul(mat4_mul(translate, rotate), scale);
+  Mat4 translate = mat4_make_translate(0.0f, 0.0f, 0.0f);
+
+  const Vec3 camera_postion = {0.0f, 0.0f, -5.0f};
+  const Vec3 camera_target = {0.0f, 0.0f, 5.0f};
+  const Vec3 world_up = {0.0f, 1.0f, 0.0f};
+
+  Mat4 view = mat4_make_look_at(&camera_postion, &camera_target, &world_up);
+
+  Mat4 transform = mat4_mul(view, mat4_mul(translate, rotate));
 
   const size_t vertex_count = mesh_vertex_count(mesh);
   const size_t normal_count = mesh_normal_count(mesh);
 
   dyn_array_clear(transformed_mesh_vertices);
+  dyn_array_clear(transformed_mesh_normals);
 
   for (int i = 0; i < vertex_count; i++) {
     Vec3 vertex = mesh->vertices[i];
@@ -238,8 +232,6 @@ void update(void) {
 
     dyn_array_push_back(transformed_mesh_vertices, vertex);
   }
-
-  dyn_array_clear(transformed_mesh_normals);
 
   for (int i = 0; i < normal_count; i++) {
     Vec3 normal = mesh->normals[i];

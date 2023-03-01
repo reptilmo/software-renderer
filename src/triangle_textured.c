@@ -1,5 +1,5 @@
-// texture_mapper.c
-#include "texture_mapper.h"
+// triangle_textured.c
+#include "triangle.h"
 #include "color.h"
 
 typedef struct Gradients {
@@ -63,8 +63,8 @@ static inline void init_edge(Edge* edge, const Gradients* g, const Triangle* tri
   const float dx = triangle->points[bottom].x - triangle->points[top].x;
   const float dy = triangle->points[bottom].y - triangle->points[top].y;
 
-  edge->real_x = y_prestep * dx / dy + triangle->points[top].x;
   edge->dx_over_dy = dx / dy;
+  edge->real_x = y_prestep * edge->dx_over_dy + triangle->points[top].x;
 
   const float x_prestep = edge->real_x - triangle->points[top].x;
 
@@ -126,7 +126,7 @@ static inline void draw_scan_line(Display* display, const Gradients* gradients, 
     if (iv > scale_height) {
       iv = scale_height;
     }
-
+    
     if (one_over_w > *(depth_bits + x)) {
       *(pixel_bits + x) = color_apply_intensity(*(texture_bits + (texture->width * iv) + iu), intensity);
       *(depth_bits + x) = one_over_w;
@@ -138,7 +138,7 @@ static inline void draw_scan_line(Display* display, const Gradients* gradients, 
   }
 }
 
-void draw_textured_triangle(Display* display, const Triangle* triangle, const Texture* texture) {
+void draw_triangle_textured(Display* display, const Triangle* triangle, const Texture* texture) {
   int8_t min, mid, max;
 
   const float y0 = triangle->points[0].y;

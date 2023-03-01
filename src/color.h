@@ -4,9 +4,9 @@
 #include "system.h"
 
 INLINE uint32_t color_apply_intensity(uint32_t color, float intencity) {
-  // if (intencity < 0.0f) {
-  //   intencity = 0.0f;
-  // }
+  if (intencity < 0.0f) {
+    intencity = 0.0f;
+  }
 
   const uint32_t a = (color & 0xFF000000) >> 24;
   uint32_t r = (color & 0x00FF0000) >> 16;

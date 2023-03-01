@@ -3,28 +3,6 @@
 #include "color.h"
 #include "darray.h"
 #include "sort.h"
-#include "texture_mapper.h"
-
-void swap_render_triangles(void* left, void* right) {
-  Triangle tmp = *(Triangle*)left;
-  *(Triangle*)left = *(Triangle*)right;
-  *(Triangle*)right = tmp;
-}
-
-bool farther_triangle(void* left, void* right) {
-
-  const float left_avg_z = (((Triangle*)left)->points[0].z +
-                            ((Triangle*)left)->points[1].z +
-                            ((Triangle*)left)->points[2].z) /
-                           3.0f;
-
-  const float right_avg_z = (((Triangle*)right)->points[0].z +
-                             ((Triangle*)right)->points[1].z +
-                             ((Triangle*)right)->points[2].z) /
-                            3.0f;
-
-  return left_avg_z > right_avg_z;
-}
 
 Renderer* init_renderer(Display* display) {
   ASSERT(display != NULL);
@@ -164,10 +142,6 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
   }
 
   const size_t renderable_count = dyn_array_length(renderer->renderable_triangles);
-
-  /*insertion_sort(renderer->renderable_triangles, renderable_count,
-                 sizeof(Triangle), farther_triangle, swap_render_triangles);*/
-
   for (size_t i = 0; i < renderable_count; i++) {
     Triangle* triangle = &renderer->renderable_triangles[i];
 
@@ -199,23 +173,23 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
     triangle->points[2] = c;
 
     if (renderer->draw_mode & DRAW_MODE_TEXTURE && renderer->current_texture != NULL) {
-      draw_textured_triangle(renderer->display, triangle, renderer->current_texture);
+      draw_triangle_textured(renderer->display, triangle, renderer->current_texture);
     }
 
     if (renderer->draw_mode & DRAW_MODE_TRIANGLE_FILL && !(renderer->draw_mode & DRAW_MODE_TEXTURE)) {
-      draw_triangle(renderer->display, a.x, a.y, b.x, b.y, c.x, c.y, color_apply_intensity(0xFFFFFFFF, triangle->light_intensity));
+      draw_triangle_shaded(renderer->display, triangle);
     }
 
     if (renderer->draw_mode & DRAW_MODE_TRIANGLE_WIRE) {
-      draw_line_dda(renderer->display, a.x, a.y, b.x, b.y, 0xFFFFFFFF);
-      draw_line_dda(renderer->display, b.x, b.y, c.x, c.y, 0xFFFFFFFF);
-      draw_line_dda(renderer->display, c.x, c.y, a.x, a.y, 0xFFFFFFFF);
+      draw_line_dda(renderer->display, (int)a.x, (int)a.y, (int)b.x, (int)b.y, 0xFFFFFFFF);
+      draw_line_dda(renderer->display, (int)b.x, (int)b.y, (int)c.x, (int)c.y, 0xFFFFFFFF);
+      draw_line_dda(renderer->display, (int)c.x, (int)c.y, (int)a.x, (int)a.y, 0xFFFFFFFF);
     }
 
     if (renderer->draw_mode & DRAW_MODE_POINTS) {
-      draw_rect(renderer->display, a.x, a.y, 6, 6, 0xFFFFFF00);
-      draw_rect(renderer->display, b.x, b.y, 6, 6, 0xFFFFFF00);
-      draw_rect(renderer->display, c.x, c.y, 6, 6, 0xFFFFFF00);
+      draw_rect(renderer->display, (int)a.x, (int)a.y, 6, 6, 0xFFFFFF00);
+      draw_rect(renderer->display, (int)b.x, (int)b.y, 6, 6, 0xFFFFFF00);
+      draw_rect(renderer->display, (int)c.x, (int)c.y, 6, 6, 0xFFFFFF00);
     }
   }
 }

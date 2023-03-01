@@ -191,7 +191,7 @@ void draw_line_dda(Display* display, int x0, int y0, int x1, int y1, uint32_t co
   float py = (float)y0;
 
   for (int i = 0; i <= run_length; i++) {
-    const size_t offset = (size_t)display->width * (size_t)roundf(py) + (size_t)roundf(px);
+    const size_t offset = (size_t)display->width * (size_t)py + (size_t)px;
     if (offset < 0 || offset >= display->pixel_buffer_len) {
       continue;
     }
@@ -202,6 +202,7 @@ void draw_line_dda(Display* display, int x0, int y0, int x1, int y1, uint32_t co
   }
 }
 
+#if 0
 static void draw_scanline(Display* display, int x0, int x1, int y, uint32_t color) {
   if (y < 0 || y >= display->height) {
     return;
@@ -281,3 +282,4 @@ void draw_triangle(Display* display, int x0, int y0, int x1, int y1, int x2, int
     draw_flat_top_triangle(display, xm, ym, x1, y1, x2, y2, color);
   }
 }
+#endif
