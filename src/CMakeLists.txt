@@ -4,6 +4,8 @@ add_executable(renderer
     system.h
     darray.h
     darray.c
+    config.h
+    config.c
     vec.h
     mat.h
     color.h
@@ -13,11 +15,11 @@ add_executable(renderer
     texture.c
     display.h
     display.c
-    sort.h
-    sort.c
     triangle.h
     triangle_shaded.c
     triangle_textured.c
+    view_frustum.h
+    view_frustum.c
     renderer.h
     renderer.c
     main.c

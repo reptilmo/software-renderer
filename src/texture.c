@@ -18,6 +18,7 @@ typedef struct TGAHeader {
 Texture* init_texture() {
   Texture* texture = (Texture*)malloc(sizeof(Texture));
   if (texture != NULL) {
+    texture->bitmap = NULL;
     texture->width = 0;
     texture->height = 0;
   }
@@ -25,7 +26,6 @@ Texture* init_texture() {
 }
 
 void destroy_texture(Texture* texture) {
-  ASSERT(texture != NULL);
   if (texture != NULL) {
     if (texture->bitmap != NULL) {
       free(texture->bitmap);

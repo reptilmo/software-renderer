@@ -75,7 +75,6 @@ Display* init_display(int width, int height, bool fullscreen) {
 }
 
 void destroy_display(Display* display) {
-  ASSERT(display != NULL);
   if (display != NULL) {
     if (display->depth_buffer != NULL) {
       free(display->depth_buffer);

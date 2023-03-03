@@ -9,6 +9,10 @@ Renderer* init_renderer(Display* display) {
   if (display != NULL) {
     Renderer* renderer = (Renderer*)malloc(sizeof(Renderer));
     if (renderer != NULL) {
+      const float fov_over_two = 60.0f * 0.5f;
+      const float near_plane = 1.0f;
+      const float far_plane = 1000.0f;
+
       renderer->display = display;
       renderer->renderable_triangles = NULL;
       renderer->current_texture = NULL;
@@ -21,11 +25,12 @@ Renderer* init_renderer(Display* display) {
       renderer->clear_color = 0xFF000000;
       renderer->draw_mode = DRAW_MODE_TRIANGLE_FILL;
       renderer->cull_mode = CULL_MODE_NONE;
-
+      renderer->light_mode = LIGHT_MODE_NONE;
+      renderer->view_frustum = frustum_make_view_frustum(fov_over_two, near_plane, far_plane);
       renderer->projection_matrix = mat4_make_perspective(
           (float)renderer->display->width,
           (float)renderer->display->height,
-          60.0f, 1.0f, 1000.0f);
+          fov_over_two, near_plane, far_plane);
 
       renderer->view_half_width = display->width * 0.5f;
       renderer->view_half_height = display->height * 0.5f;
@@ -38,7 +43,6 @@ Renderer* init_renderer(Display* display) {
 }
 
 void destroy_renderer(Renderer* renderer) {
-  ASSERT(renderer != NULL);
   if (renderer != NULL) {
     dyn_array_free(renderer->renderable_triangles);
     free(renderer);
@@ -59,10 +63,17 @@ void renderer_draw_mode(Renderer* renderer, DrawMode draw_mode) {
   }
 }
 
-void renderer_camera_position(Renderer* renderer, Vec3 position) {
+void renderer_light_mode(Renderer* renderer, LightMode light_mode) {
   ASSERT(renderer != NULL);
   if (renderer != NULL) {
-    renderer->camera_position = position;
+    renderer->light_mode = light_mode;
+  }
+}
+
+void renderer_camera_position(Renderer* renderer, const Vec3* position) {
+  ASSERT(renderer != NULL);
+  if (renderer != NULL) {
+    renderer->camera_position = *position;
   }
 }
 
@@ -73,10 +84,10 @@ void renderer_clear_color(Renderer* renderer, uint32_t color) {
   }
 }
 
-void renderer_light_direction(Renderer* renderer, Vec3 light_direction) {
+void renderer_light_direction(Renderer* renderer, const Vec3* light_direction) {
   ASSERT(renderer != NULL);
   if (renderer != NULL) {
-    renderer->light_direction = light_direction;
+    renderer->light_direction = *light_direction;
   }
 }
 
@@ -127,7 +138,10 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
       }
     }
 
-    const float light_intensity = -1.0f * vec3_dot(&renderer->light_direction, &triangle_normal);
+    float light_intensity = 1.0f;
+    if (renderer->light_mode > LIGHT_MODE_NONE) {
+      light_intensity = -1.0f * vec3_dot(&renderer->light_direction, &triangle_normal);
+    }
 
     Triangle triangle;
     triangle.points[0] = vec3_xyzw(&vertices[face.a]);

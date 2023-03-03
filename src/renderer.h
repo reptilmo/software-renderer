@@ -6,6 +6,7 @@
 #include "mesh.h"
 #include "texture.h"
 #include "triangle.h"
+#include "view_frustum.h"
 
 typedef enum CullMode {
   CULL_MODE_NONE = 0,
@@ -19,6 +20,12 @@ typedef enum DrawMode {
   DRAW_MODE_TEXTURE = 0b00001000u,
 } DrawMode;
 
+typedef enum LightMode {
+  LIGHT_MODE_NONE = 0,
+  LIGHT_MODE_FLAT = 1,
+  LIGHT_MODE_GOURAUD = 2,
+} LightMode;
+
 typedef struct Renderer {
   Display* display;
   Triangle* renderable_triangles;
@@ -28,6 +35,8 @@ typedef struct Renderer {
   uint32_t clear_color;
   DrawMode draw_mode;
   CullMode cull_mode;
+  LightMode light_mode;
+  Frustum view_frustum;
   Mat4 projection_matrix;
   float view_half_width;
   float view_half_height;
@@ -38,8 +47,9 @@ void destroy_renderer(Renderer* renderer);
 
 void renderer_cull_mode(Renderer* renderer, CullMode cull_mode);
 void renderer_draw_mode(Renderer* renderer, DrawMode draw_mode);
-void renderer_camera_position(Renderer* renderer, Vec3 position);
-void renderer_light_direction(Renderer* renderer, Vec3 light_direction);
+void renderer_light_mode(Renderer* renderer, LightMode light_mode);
+void renderer_camera_position(Renderer* renderer, const Vec3* position);
+void renderer_light_direction(Renderer* renderer, const Vec3* light_direction);
 void renderer_clear_color(Renderer* renderer, uint32_t color);
 void renderer_current_texture(Renderer* renderer, Texture* texture);
 

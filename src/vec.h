@@ -32,6 +32,10 @@ INLINE void vec4_swap(Vec4* a, Vec4* b) {
   *b = tmp;
 }
 
+INLINE Vec3 vec3_new(float x, float y, float z) {
+  return (Vec3){.x = x, .y = y, .z = z};
+}
+
 INLINE Vec2 vec2_add(const Vec2* a, const Vec2* b) {
   return (Vec2){
       .x = a->x + b->x,

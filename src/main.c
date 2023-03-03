@@ -5,8 +5,8 @@
 #include "mesh.h"
 #include "renderer.h"
 #include "texture.h"
+#include "config.h"
 
-const char* process_command_line(int argc, char* argv[], int* width, int* height, bool* fullscreen);
 void process_input(bool* running);
 void update(float delta_time);
 void render(void);
@@ -21,6 +21,9 @@ bool enable_draw_wireframe = false;
 bool enable_draw_points = false;
 bool enable_texture_mapping = true;
 DrawMode draw_mode = DRAW_MODE_TEXTURE;
+LightMode light_mode = LIGHT_MODE_FLAT;
+
+const Vec3 camera_postion = {0.0f, 0.0f, -5.0f};
 
 Mesh* mesh = NULL;
 Vec3 mesh_rotation = {.x = 0, .y = 0, .z = 0};
@@ -29,60 +32,61 @@ Vec3* transformed_mesh_vertices = NULL;
 Vec3* transformed_mesh_normals = NULL;
 
 int main(int argc, char* argv[]) {
-  int width = 800;
-  int height = 600;
-  bool fullscreen = false;
-  const char* mesh_file = process_command_line(argc, argv, &width, &height, &fullscreen);
+  int rval = 0;
+  Config config;
+  process_command_line(&config, argc, argv);
 
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
     fprintf(stderr, "Error from SDL init!\n");
     return 1;
   }
 
-  display = init_display(width, height, fullscreen);
+  display = init_display(config.window_width, config.window_height, config.full_screen);
   if (display == NULL) {
-    SDL_Quit();
-    return 1;
+    rval = 1;
+    goto EXIT;
   }
 
   renderer = init_renderer(display);
   if (renderer == NULL) {
-    destroy_display(display);
-    SDL_Quit();
-    return 1;
+    rval = 1;
+    goto EXIT;
+  }
+
+  mesh = init_mesh();
+  if (mesh == NULL) {
+    rval = 1;
+    goto EXIT;
   }
 
   texture = init_texture();
   if (texture == NULL) {
-    destroy_renderer(renderer);
-    destroy_display(display);
-    SDL_Quit();
-    return 1;
+    rval = 1;
+    goto EXIT;
   }
 
-  texture_load_checker_board(texture);
-
-  renderer_camera_position(renderer, camera_position);
+  //FIXME: Move initial state out of here.
   renderer_clear_color(renderer, 0xFF000000);
   renderer_draw_mode(renderer, draw_mode);
   renderer_cull_mode(renderer, CULL_MODE_BACKFACE);
+  renderer_light_mode(renderer, light_mode);
 
-  mesh = init_mesh();
-  if (mesh == NULL) {
-    destroy_texture(texture);
-    destroy_renderer(renderer);
-    destroy_display(display);
-    SDL_Quit();
-    return 1;
-  }
-
-  bool running = false;
-  if (mesh_file != NULL) {
-    running = mesh_load_obj(mesh, mesh_file);
+  bool mesh_loaded = false;
+  if (config.mesh_file != NULL) {
+    mesh_loaded = mesh_load_obj(mesh, config.mesh_file);
   } else {
-    running = mesh_load_cube(mesh);
+    mesh_loaded = mesh_load_cube(mesh);
   }
 
+  bool texture_loaded = false;
+  if (config.texture_file != NULL) {
+    texture_loaded = texture_load_tga(texture, config.texture_file);
+  } else {
+    texture_loaded = texture_load_checker_board(texture);
+  }
+
+
+  bool running = mesh_loaded && texture_loaded;
   int previous_frame_time = 0;
   int delta_time = 0;
 
@@ -96,43 +100,14 @@ int main(int argc, char* argv[]) {
     render();
   }
 
-  destroy_mesh(mesh);
+EXIT:
   destroy_texture(texture);
+  destroy_mesh(mesh);
   destroy_renderer(renderer);
   destroy_display(display);
   SDL_Quit();
 
-  return 0;
-}
-
-const char* process_command_line(int argc, char* argv[], int* width, int* height, bool* fullscreen) {
-  int requested_width = 0;
-  int requested_height = 0;
-  bool requested_fullscreen = false;
-  const char* requested_mesh_file = NULL;
-
-  for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "--fullscreen") == 0) {
-      requested_fullscreen = true;
-    } else if (sscanf(argv[i], "--w%d", &requested_width) == 1) {
-      continue;
-    } else if (sscanf(argv[i], "--h%d", &requested_height) == 1) {
-      continue;
-    } else if (strncmp(argv[i], "--mesh=", 7) == 0) {
-      requested_mesh_file = argv[i] + 7;
-    }
-  }
-
-  if (requested_width > 0 && requested_height > 0) {
-    *width = requested_width;
-    *height = requested_height;
-  }
-
-  if (requested_fullscreen) {
-    *fullscreen = requested_fullscreen;
-  }
-
-  return requested_mesh_file;
+  return rval;
 }
 
 void process_input(bool* running) {
@@ -211,7 +186,6 @@ void update(float dt) {
 
   Mat4 translate = mat4_make_translate(0.0f, 0.0f, 0.0f);
 
-  const Vec3 camera_postion = {0.0f, 0.0f, -5.0f};
   const Vec3 camera_target = {0.0f, 0.0f, 5.0f};
   const Vec3 world_up = {0.0f, 1.0f, 0.0f};
 
@@ -246,6 +220,7 @@ void render(void) {
   ASSERT(renderer != NULL);
   renderer_begin_frame(renderer);
 
+  renderer_camera_position(renderer, &camera_postion);
   renderer_current_texture(renderer, texture);
   renderer_begin_triangles(
       renderer,
