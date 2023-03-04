@@ -10,8 +10,8 @@ Renderer* init_renderer(Display* display) {
     Renderer* renderer = (Renderer*)malloc(sizeof(Renderer));
     if (renderer != NULL) {
       const float fov_over_two = 60.0f * 0.5f;
-      const float near_plane = 1.0f;
-      const float far_plane = 1000.0f;
+      const float near_plane = 0.0f;
+      const float far_plane = 99.0f;
 
       renderer->display = display;
       renderer->renderable_triangles = NULL;
@@ -113,7 +113,6 @@ void renderer_end_frame(Renderer* renderer) {
 
 void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t num_faces,
                               Vec3* vertices, size_t num_vertices, Vec3* normals, size_t num_normals, Vec2* uvs, size_t num_uvs) {
-
   ASSERT(renderer != NULL);
 
   for (size_t face_idx = 0; face_idx < num_faces; face_idx++) {
@@ -143,16 +142,27 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
       light_intensity = -1.0f * vec3_dot(&renderer->light_direction, &triangle_normal);
     }
 
-    Triangle triangle;
-    triangle.points[0] = vec3_xyzw(&vertices[face.a]);
-    triangle.points[1] = vec3_xyzw(&vertices[face.b]);
-    triangle.points[2] = vec3_xyzw(&vertices[face.c]);
-    triangle.uvs[0] = uvs[face.a_uv];
-    triangle.uvs[1] = uvs[face.b_uv];
-    triangle.uvs[2] = uvs[face.c_uv];
-    triangle.light_intensity = light_intensity;
+    Polygon polygon;
+    polygon.vertices[0] = vertices[face.a];
+    polygon.vertices[1] = vertices[face.b];
+    polygon.vertices[2] = vertices[face.c];
+    polygon.vertex_count = 3;
 
-    dyn_array_push_back(renderer->renderable_triangles, triangle);
+    frustum_clip_polygon(&renderer->view_frustum, &polygon);
+
+    Vec3* a = &polygon.vertices[0];
+    for (int i = 1; i <= polygon.vertex_count - 2; i++) {
+      Triangle triangle;
+      triangle.points[0] = vec3_xyzw(a);
+      triangle.points[1] = vec3_xyzw(&polygon.vertices[i]);
+      triangle.points[2] = vec3_xyzw(&polygon.vertices[i + 1]);
+      triangle.uvs[0] = uvs[face.a_uv];
+      triangle.uvs[1] = uvs[face.b_uv];
+      triangle.uvs[2] = uvs[face.c_uv];
+      triangle.light_intensity = light_intensity;
+
+      dyn_array_push_back(renderer->renderable_triangles, triangle);
+    }
   }
 
   const size_t renderable_count = dyn_array_length(renderer->renderable_triangles);
@@ -201,9 +211,9 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
     }
 
     if (renderer->draw_mode & DRAW_MODE_POINTS) {
-      draw_rect(renderer->display, (int)a.x, (int)a.y, 6, 6, 0xFFFFFF00);
-      draw_rect(renderer->display, (int)b.x, (int)b.y, 6, 6, 0xFFFFFF00);
-      draw_rect(renderer->display, (int)c.x, (int)c.y, 6, 6, 0xFFFFFF00);
+      draw_rect(renderer->display, (int)a.x, (int)a.y, 6, 6, 0xFFFF0000);
+      draw_rect(renderer->display, (int)b.x, (int)b.y, 6, 6, 0xFF00FF00);
+      draw_rect(renderer->display, (int)c.x, (int)c.y, 6, 6, 0xFF0000FF);
     }
   }
 }

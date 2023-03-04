@@ -152,7 +152,6 @@ void draw_grid(Display* display, int step, uint32_t color) {
 }
 
 void draw_rect(Display* display, int left, int top, int width, int height, uint32_t color) {
-
   if (left < 0) {
     left = 0;
   }

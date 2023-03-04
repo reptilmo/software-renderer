@@ -28,8 +28,8 @@ typedef enum LightMode {
 
 typedef struct Renderer {
   Display* display;
-  Triangle* renderable_triangles;
   Texture* current_texture;
+  Triangle* renderable_triangles;
   Vec3 light_direction;
   Vec3 camera_position;
   uint32_t clear_color;

@@ -17,13 +17,13 @@ Texture* texture = NULL;
 
 bool enable_backface_culling = true;
 bool enable_draw_fill = false;
-bool enable_draw_wireframe = false;
+bool enable_draw_wireframe = true;
 bool enable_draw_points = false;
-bool enable_texture_mapping = true;
-DrawMode draw_mode = DRAW_MODE_TEXTURE;
+bool enable_texture_mapping = false;
+DrawMode draw_mode = DRAW_MODE_TRIANGLE_WIRE;
 LightMode light_mode = LIGHT_MODE_FLAT;
 
-const Vec3 camera_postion = {0.0f, 0.0f, -5.0f};
+Vec3 camera_postion = {0.0f, 0.0f, -5.0f};
 
 Mesh* mesh = NULL;
 Vec3 mesh_rotation = {.x = 0, .y = 0, .z = 0};
@@ -176,9 +176,14 @@ void process_input(bool* running) {
 void update(float dt) {
   ASSERT(mesh != NULL);
 
-  mesh_rotation.x += 0.01f * dt;
-  mesh_rotation.y += 0.01f * dt;
-  mesh_rotation.z += 0.01f * dt;
+  //mesh_rotation.x += 0.01f * dt;
+  //mesh_rotation.y += 0.01f * dt;
+  //mesh_rotation.z += 0.01f * dt;
+
+  mesh_rotation.x = 0.5f;
+  mesh_rotation.z = 0.5f;
+
+  camera_postion.z += 0.0005f;
 
   Mat4 rotate = mat4_mul(mat4_make_rotate_z(mesh_rotation.z),
                          mat4_mul(mat4_make_rotate_y(mesh_rotation.y),
