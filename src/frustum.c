@@ -1,5 +1,5 @@
-// view_frustum.c
-#include "view_frustum.h"
+// frustum.c
+#include "frustum.h"
 #include "system.h"
 
 Frustum frustum_make_view_frustum(float fov_over_two, float near, float far) {
@@ -27,6 +27,7 @@ Frustum frustum_make_view_frustum(float fov_over_two, float near, float far) {
   return frustum;
 }
 
+#if 0
 static inline void plane_clip_polygon(const Plane* plane, Polygon* polygon) {
   // http://www.idav.ucdavis.edu/education/GraphicsNotes/Clipping/Clipping.html
   const Vec3 P = plane->point;
@@ -63,8 +64,8 @@ static inline void plane_clip_polygon(const Plane* plane, Polygon* polygon) {
 
   for (int i = 0; i < in_count; i++) {
     polygon->vertices[i] = in[i];
-    polygon->vertex_count = in_count;
   }
+  polygon->vertex_count = in_count;
 }
 
 void frustum_clip_polygon(const Frustum* frustum, Polygon* polygon) {
@@ -75,3 +76,4 @@ void frustum_clip_polygon(const Frustum* frustum, Polygon* polygon) {
   plane_clip_polygon(&frustum->planes[FRUSTUM_TOP_PLANE], polygon);
   plane_clip_polygon(&frustum->planes[FRUSTUM_BOTTOM_PLANE], polygon);
 }
+#endif

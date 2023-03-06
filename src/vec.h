@@ -3,6 +3,13 @@
 
 #include "system.h"
 
+typedef enum Axis {
+  X_AXIS = 0,
+  Y_AXIS = 1,
+  Z_AXIS = 2,
+  W_AXIS = 3
+} Axis;
+
 typedef struct Vec2 {
   float x, y;
 } Vec2;
@@ -197,6 +204,31 @@ INLINE Vec4 vec3_xyzw(const Vec3* v) {
       .y = v->y,
       .z = v->z,
       1,
+  };
+}
+
+INLINE float vec4_axis(const Vec4* v, Axis axis) {
+  switch (axis) {
+  case X_AXIS:
+    return v->x;
+  case Y_AXIS:
+    return v->y;
+  case Z_AXIS:
+    return v->z;
+  case W_AXIS:
+    return v->w;
+  default:
+    ASSERT(0);
+    return 0.0f;
+  }
+}
+
+INLINE Vec4 vec4_lerp(const Vec4* start, const Vec4* end, float t) {
+  return (Vec4){
+      .x = start->x + t * (end->x - start->x),
+      .y = start->y + t * (end->y - start->y),
+      .z = start->z + t * (end->z - start->z),
+      .w = start->w + t * (end->w - start->w),
   };
 }
 

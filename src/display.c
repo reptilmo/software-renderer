@@ -190,11 +190,9 @@ void draw_line_dda(Display* display, int x0, int y0, int x1, int y1, uint32_t co
 
   for (int i = 0; i <= run_length; i++) {
     const size_t offset = (size_t)display->width * (size_t)py + (size_t)px;
-    if (offset < 0 || offset >= display->pixel_buffer_len) {
-      continue;
+    if (offset >= 0 && offset < display->pixel_buffer_len) {
+      display->pixel_buffer[offset] = color;
     }
-
-    display->pixel_buffer[offset] = color;
     px += sx;
     py += sy;
   }

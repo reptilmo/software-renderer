@@ -6,7 +6,7 @@
 #include "mesh.h"
 #include "texture.h"
 #include "triangle.h"
-#include "view_frustum.h"
+#include "frustum.h"
 
 typedef enum CullMode {
   CULL_MODE_NONE = 0,
@@ -29,7 +29,7 @@ typedef enum LightMode {
 typedef struct Renderer {
   Display* display;
   Texture* current_texture;
-  Triangle* renderable_triangles;
+  Polygon* renderable_triangles;
   Vec3 light_direction;
   Vec3 camera_position;
   uint32_t clear_color;

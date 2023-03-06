@@ -176,9 +176,9 @@ void process_input(bool* running) {
 void update(float dt) {
   ASSERT(mesh != NULL);
 
-  //mesh_rotation.x += 0.01f * dt;
-  //mesh_rotation.y += 0.01f * dt;
-  //mesh_rotation.z += 0.01f * dt;
+  mesh_rotation.x += 0.01f * dt;
+  mesh_rotation.y += 0.01f * dt;
+  mesh_rotation.z += 0.01f * dt;
 
   mesh_rotation.x = 0.5f;
   mesh_rotation.z = 0.5f;

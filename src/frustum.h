@@ -1,18 +1,9 @@
-// view_frustum.h
+// frustum.h
 #pragma once
 
 #include "darray.h"
 #include "triangle.h"
 #include "vec.h"
-
-enum {
-  POLYGON_MAX_VERTICES = 9,
-};
-
-typedef struct Polygon {
-  Vec3 vertices[POLYGON_MAX_VERTICES];
-  int vertex_count;
-} Polygon;
 
 typedef struct Plane {
   Vec3 point;
@@ -35,4 +26,4 @@ typedef struct Frustum {
 } Frustum;
 
 Frustum frustum_make_view_frustum(float fov_over_two, float near, float far);
-void frustum_clip_polygon(const Frustum* frustum, Polygon* polygon);
+//void frustum_clip_polygon(const Frustum* frustum, Polygon* polygon);

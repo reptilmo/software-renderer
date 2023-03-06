@@ -2,7 +2,7 @@
 #include "renderer.h"
 #include "color.h"
 #include "darray.h"
-#include "sort.h"
+#include "clipping.h"
 
 Renderer* init_renderer(Display* display) {
   ASSERT(display != NULL);
@@ -102,7 +102,7 @@ void renderer_begin_frame(Renderer* renderer) {
   ASSERT(renderer != NULL);
   clear_depth_buffer(renderer->display, 0.0f);
   clear_pixel_buffer(renderer->display, renderer->clear_color);
-  // draw_grid(renderer->display, 10, 0xFF333333);
+  draw_grid(renderer->display, 10, 0xFF555555);
 }
 
 void renderer_end_frame(Renderer* renderer) {
@@ -142,78 +142,86 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
       light_intensity = -1.0f * vec3_dot(&renderer->light_direction, &triangle_normal);
     }
 
-    Polygon polygon;
-    polygon.vertices[0] = vertices[face.a];
-    polygon.vertices[1] = vertices[face.b];
-    polygon.vertices[2] = vertices[face.c];
-    polygon.vertex_count = 3;
+    Polygon triangle;
+    triangle.vertex_count = 3;
+    triangle.vertices[0] = vec3_xyzw(&vertices[face.a]);
+    triangle.vertices[1] = vec3_xyzw(&vertices[face.b]);
+    triangle.vertices[2] = vec3_xyzw(&vertices[face.c]);
+    triangle.uvs[0] = uvs[face.a_uv];
+    triangle.uvs[1] = uvs[face.b_uv];
+    triangle.uvs[2] = uvs[face.c_uv];
+    triangle.light_intensity = light_intensity;
 
-    frustum_clip_polygon(&renderer->view_frustum, &polygon);
-
-    Vec3* a = &polygon.vertices[0];
-    for (int i = 1; i <= polygon.vertex_count - 2; i++) {
-      Triangle triangle;
-      triangle.points[0] = vec3_xyzw(a);
-      triangle.points[1] = vec3_xyzw(&polygon.vertices[i]);
-      triangle.points[2] = vec3_xyzw(&polygon.vertices[i + 1]);
-      triangle.uvs[0] = uvs[face.a_uv];
-      triangle.uvs[1] = uvs[face.b_uv];
-      triangle.uvs[2] = uvs[face.c_uv];
-      triangle.light_intensity = light_intensity;
-
-      dyn_array_push_back(renderer->renderable_triangles, triangle);
-    }
+    dyn_array_push_back(renderer->renderable_triangles, triangle);
   }
 
   const size_t renderable_count = dyn_array_length(renderer->renderable_triangles);
+  /*if (renderable_count <= 0) {
+    return;
+  }*/
+
   for (size_t i = 0; i < renderable_count; i++) {
-    Triangle* triangle = &renderer->renderable_triangles[i];
+    Polygon* polygon = &renderer->renderable_triangles[i];
+    ASSERT(polygon->vertex_count == 3);
+    polygon->vertices[0] = mat4_mul_vec4(renderer->projection_matrix, polygon->vertices[0]);
+    polygon->vertices[1] = mat4_mul_vec4(renderer->projection_matrix, polygon->vertices[1]);
+    polygon->vertices[2] = mat4_mul_vec4(renderer->projection_matrix, polygon->vertices[2]);
 
-    Vec4 a = mat4_mul_vec4(renderer->projection_matrix, triangle->points[0]);
-    Vec4 b = mat4_mul_vec4(renderer->projection_matrix, triangle->points[1]);
-    Vec4 c = mat4_mul_vec4(renderer->projection_matrix, triangle->points[2]);
+    axis_side_clip_polygon(W_AXIS, 1.0f, polygon);
+    axis_side_clip_polygon(W_AXIS, -1.0f, polygon);
+    axis_side_clip_polygon(X_AXIS, 1.0f, polygon);
+    axis_side_clip_polygon(X_AXIS, -1.0f, polygon);
+    axis_side_clip_polygon(Y_AXIS, 1.0f, polygon);
+    axis_side_clip_polygon(Y_AXIS, -1.0f, polygon);
+    axis_side_clip_polygon(Z_AXIS, 1.0f, polygon);
+    axis_side_clip_polygon(Z_AXIS, -1.0f, polygon);
 
-    a = perspective_divide(&a);
-    b = perspective_divide(&b);
-    c = perspective_divide(&c);
-
-    // Scale and translate from NDC space to viewport
-    a.x *= renderer->view_half_width;
-    a.y *= -renderer->view_half_height;
-    b.x *= renderer->view_half_width;
-    b.y *= -renderer->view_half_height;
-    c.x *= renderer->view_half_width;
-    c.y *= -renderer->view_half_height;
-
-    a.x += renderer->view_half_width;
-    a.y += renderer->view_half_height;
-    b.x += renderer->view_half_width;
-    b.y += renderer->view_half_height;
-    c.x += renderer->view_half_width;
-    c.y += renderer->view_half_height;
-
-    triangle->points[0] = a;
-    triangle->points[1] = b;
-    triangle->points[2] = c;
-
-    if (renderer->draw_mode & DRAW_MODE_TEXTURE && renderer->current_texture != NULL) {
-      draw_triangle_textured(renderer->display, triangle, renderer->current_texture);
+    for (int vertex_idx = 0; vertex_idx < polygon->vertex_count; vertex_idx++) {
+      polygon->vertices[vertex_idx] = perspective_divide(&polygon->vertices[vertex_idx]);
+      // Scale and translate from NDC space to viewport.
+      // FIXME: Use a matrix.
+      polygon->vertices[vertex_idx].x *= renderer->view_half_width;
+      polygon->vertices[vertex_idx].y *= -renderer->view_half_height;
+      polygon->vertices[vertex_idx].x += renderer->view_half_width - 0.5f;
+      polygon->vertices[vertex_idx].y += renderer->view_half_height - 0.5f;
     }
 
-    if (renderer->draw_mode & DRAW_MODE_TRIANGLE_FILL && !(renderer->draw_mode & DRAW_MODE_TEXTURE)) {
-      draw_triangle_shaded(renderer->display, triangle);
-    }
+    const Vec4* p0 = &polygon->vertices[0];
+    const Vec2* uv0 = &polygon->uvs[0];
+    for (int idx = 1; idx <= polygon->vertex_count - 2; idx++) {
+      Triangle triangle;
+      triangle.points[0] = *p0;
+      triangle.points[1] = polygon->vertices[idx];
+      triangle.points[2] = polygon->vertices[idx + 1];
+      triangle.uvs[0] = *uv0;
+      triangle.uvs[1] = polygon->uvs[idx];
+      triangle.uvs[2] = polygon->uvs[idx + 1];
+      triangle.light_intensity = polygon->light_intensity;
 
-    if (renderer->draw_mode & DRAW_MODE_TRIANGLE_WIRE) {
-      draw_line_dda(renderer->display, (int)a.x, (int)a.y, (int)b.x, (int)b.y, 0xFFFFFFFF);
-      draw_line_dda(renderer->display, (int)b.x, (int)b.y, (int)c.x, (int)c.y, 0xFFFFFFFF);
-      draw_line_dda(renderer->display, (int)c.x, (int)c.y, (int)a.x, (int)a.y, 0xFFFFFFFF);
-    }
+      if (renderer->draw_mode & DRAW_MODE_TEXTURE && renderer->current_texture != NULL) {
+        draw_triangle_textured(renderer->display, &triangle, renderer->current_texture);
+      }
 
-    if (renderer->draw_mode & DRAW_MODE_POINTS) {
-      draw_rect(renderer->display, (int)a.x, (int)a.y, 6, 6, 0xFFFF0000);
-      draw_rect(renderer->display, (int)b.x, (int)b.y, 6, 6, 0xFF00FF00);
-      draw_rect(renderer->display, (int)c.x, (int)c.y, 6, 6, 0xFF0000FF);
+      if (renderer->draw_mode & DRAW_MODE_TRIANGLE_FILL && !(renderer->draw_mode & DRAW_MODE_TEXTURE)) {
+        draw_triangle_shaded(renderer->display, &triangle);
+      }
+
+      //FIXME:
+      const Vec4* a = &triangle.points[0];
+      const Vec4* b = &triangle.points[1];
+      const Vec4* c = &triangle.points[2];
+
+      if (renderer->draw_mode & DRAW_MODE_TRIANGLE_WIRE) {
+        draw_line_dda(renderer->display, (int)a->x, (int)a->y, (int)b->x, (int)b->y, 0xFFFF0000);
+        draw_line_dda(renderer->display, (int)b->x, (int)b->y, (int)c->x, (int)c->y, 0xFFFF0000);
+        draw_line_dda(renderer->display, (int)c->x, (int)c->y, (int)a->x, (int)a->y, 0xFFFF0000);
+      }
+
+      if (renderer->draw_mode & DRAW_MODE_POINTS) {
+        draw_rect(renderer->display, (int)a->x, (int)a->y, 6, 6, 0xFFFF0000);
+        draw_rect(renderer->display, (int)b->x, (int)b->y, 6, 6, 0xFF00FF00);
+        draw_rect(renderer->display, (int)c->x, (int)c->y, 6, 6, 0xFF0000FF);
+      }
     }
   }
 }

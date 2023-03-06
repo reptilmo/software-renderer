@@ -18,8 +18,10 @@ add_executable(renderer
     triangle.h
     triangle_shaded.c
     triangle_textured.c
-    view_frustum.h
-    view_frustum.c
+    clipping.h
+    clipping.c
+    frustum.h
+    frustum.c
     renderer.h
     renderer.c
     main.c
