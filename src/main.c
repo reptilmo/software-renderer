@@ -17,10 +17,10 @@ Texture* texture = NULL;
 
 bool enable_backface_culling = true;
 bool enable_draw_fill = false;
-bool enable_draw_wireframe = true;
+bool enable_draw_wireframe = false;
 bool enable_draw_points = false;
-bool enable_texture_mapping = false;
-DrawMode draw_mode = DRAW_MODE_TRIANGLE_WIRE;
+bool enable_texture_mapping = true;
+DrawMode draw_mode = DRAW_MODE_TEXTURE;
 LightMode light_mode = LIGHT_MODE_FLAT;
 
 Vec3 camera_postion = {0.0f, 0.0f, -5.0f};
@@ -179,9 +179,6 @@ void update(float dt) {
   mesh_rotation.x += 0.01f * dt;
   mesh_rotation.y += 0.01f * dt;
   mesh_rotation.z += 0.01f * dt;
-
-  mesh_rotation.x = 0.5f;
-  mesh_rotation.z = 0.5f;
 
   camera_postion.z += 0.0005f;
 

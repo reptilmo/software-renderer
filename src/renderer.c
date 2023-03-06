@@ -102,13 +102,13 @@ void renderer_begin_frame(Renderer* renderer) {
   ASSERT(renderer != NULL);
   clear_depth_buffer(renderer->display, 0.0f);
   clear_pixel_buffer(renderer->display, renderer->clear_color);
-  draw_grid(renderer->display, 10, 0xFF555555);
+  //draw_grid(renderer->display, 10, 0xFF555555);
 }
 
 void renderer_end_frame(Renderer* renderer) {
   ASSERT(renderer != NULL);
   present_pixel_buffer(renderer->display);
-  // present_depth_buffer(renderer->display);
+  //present_depth_buffer(renderer->display);
 }
 
 void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t num_faces,
@@ -156,10 +156,6 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
   }
 
   const size_t renderable_count = dyn_array_length(renderer->renderable_triangles);
-  /*if (renderable_count <= 0) {
-    return;
-  }*/
-
   for (size_t i = 0; i < renderable_count; i++) {
     Polygon* polygon = &renderer->renderable_triangles[i];
     ASSERT(polygon->vertex_count == 3);

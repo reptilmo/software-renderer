@@ -87,6 +87,13 @@ INLINE Vec2 vec2_normalized(const Vec2* v) {
   };
 }
 
+INLINE Vec2 vec2_lerp(const Vec2* start, const Vec2* end, float t) {
+  return (Vec2){
+      .x = start->x + t * (end->x - start->x),
+      .y = start->y + t * (end->y - start->y),
+  };
+}
+
 INLINE Vec3 vec3_add(const Vec3* a, const Vec3* b) {
   return (Vec3){
       .x = a->x + b->x,
