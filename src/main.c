@@ -211,6 +211,7 @@ void update(float dt) {
 
   for (int i = 0; i < normal_count; i++) {
     Vec3 normal = mesh->normals[i];
+    //FIXME: I think there is a problem here.
     Vec4 transformed = mat4_mul_vec4(rotate, vec3_xyzw(&normal));
     normal = vec4_xyz(&transformed);
 
