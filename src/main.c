@@ -180,7 +180,7 @@ void update(float dt) {
   mesh_rotation.y += 0.01f * dt;
   mesh_rotation.z += 0.01f * dt;
 
-  camera_postion.z += 0.0005f;
+  camera_postion.z += sinf(mesh_rotation.x) * 0.04f;
 
   Mat4 rotate = mat4_mul(mat4_make_rotate_z(mesh_rotation.z),
                          mat4_mul(mat4_make_rotate_y(mesh_rotation.y),

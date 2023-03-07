@@ -8,19 +8,19 @@
 #include "triangle.h"
 #include "frustum.h"
 
-typedef enum CullMode {
+typedef enum {
   CULL_MODE_NONE = 0,
   CULL_MODE_BACKFACE = 1,
 } CullMode;
 
-typedef enum DrawMode {
+typedef enum {
   DRAW_MODE_TRIANGLE_FILL = 0b00000001u,
   DRAW_MODE_TRIANGLE_WIRE = 0b00000010u,
   DRAW_MODE_POINTS = 0b00000100u,
   DRAW_MODE_TEXTURE = 0b00001000u,
 } DrawMode;
 
-typedef enum LightMode {
+typedef enum {
   LIGHT_MODE_NONE = 0,
   LIGHT_MODE_FLAT = 1,
   LIGHT_MODE_GOURAUD = 2,

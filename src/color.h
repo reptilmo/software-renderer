@@ -17,6 +17,7 @@ INLINE uint32_t color_apply_intensity(uint32_t color, float intencity) {
   // g = (uint32_t)(((g / 255.0f) * intencity) * 255.0f);
   // b = (uint32_t)(((b / 255.0f) * intencity) * 255.0f);
 
+  //FIXME: Doing this per pixel seems to currently seems to be a big performance hit!
   r = (uint32_t)(r * intencity);
   g = (uint32_t)(g * intencity);
   b = (uint32_t)(b * intencity);

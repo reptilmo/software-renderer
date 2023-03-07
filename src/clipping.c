@@ -18,7 +18,7 @@ void axis_side_clip_polygon(const Axis axis, float side, Polygon* polygon) {
     int8_t dot = (side * vec4_axis(current, axis)) <= vec4_axis(current, W_AXIS) ? 1 : -1;
 
     if ((previous_dot * dot) < 0) {
-      // (Wp - Paxis) / (Wp - Paxis) - (Wc - Caxis)
+      // (W-p - P-axis) / (W-p - P-axis) - (W-c - C-axis)
       const float factor = (vec4_axis(previous, W_AXIS) - vec4_axis(previous, axis) * side) /
         ((vec4_axis(previous, W_AXIS) - vec4_axis(previous, axis) * side) -
           (vec4_axis(current, W_AXIS) - vec4_axis(current, axis) * side));
