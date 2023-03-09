@@ -6,11 +6,15 @@
 #include "renderer.h"
 #include "texture.h"
 #include "config.h"
+#include "input.h"
 
 void process_input(bool* running);
 void update(float delta_time);
 void render(void);
 
+
+ConfigMap config;
+InputHandler input;
 Display* display = NULL;
 Renderer* renderer = NULL;
 Texture* texture = NULL;
@@ -33,15 +37,23 @@ Vec3* transformed_mesh_normals = NULL;
 
 int main(int argc, char* argv[]) {
   int rval = 0;
-  Config config;
+
+  init_config_map(&config);
   process_command_line(&config, argc, argv);
+  init_input_handler(&input, &config);
+
+  const bool fullscreen = config_map_value_int(&config, "fullscreen", 0) > 0;
+  const int window_width = config_map_value_int(&config, "window_width", 800);
+  const int window_height = config_map_value_int(&config, "window_height", 600);
+  const char* mesh_file_path = config_map_value_str(&config, "load_mesh", NULL);
+  const char* texture_file_path = config_map_value_str(&config, "load_texture", NULL);
 
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
     fprintf(stderr, "Error from SDL init!\n");
     return 1;
   }
 
-  display = init_display(config.window_width, config.window_height, config.full_screen);
+  display = init_display(window_width, window_height, fullscreen);
   if (display == NULL) {
     rval = 1;
     goto EXIT;
@@ -72,15 +84,15 @@ int main(int argc, char* argv[]) {
   renderer_light_mode(renderer, light_mode);
 
   bool mesh_loaded = false;
-  if (config.mesh_file != NULL) {
-    mesh_loaded = mesh_load_obj(mesh, config.mesh_file);
+  if (mesh_file_path != NULL) {
+    mesh_loaded = mesh_load_obj(mesh, mesh_file_path);
   } else {
     mesh_loaded = mesh_load_cube(mesh);
   }
 
   bool texture_loaded = false;
-  if (config.texture_file != NULL) {
-    texture_loaded = texture_load_tga(texture, config.texture_file);
+  if (texture_file_path != NULL) {
+    texture_loaded = texture_load_tga(texture, texture_file_path);
   } else {
     texture_loaded = texture_load_checker_board(texture);
   }

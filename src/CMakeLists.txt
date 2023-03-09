@@ -6,6 +6,8 @@ add_executable(renderer
     darray.c
     config.h
     config.c
+    input.h
+    input.c
     vec.h
     mat.h
     color.h

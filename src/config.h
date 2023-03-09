@@ -3,29 +3,21 @@
 
 #include "system.h"
 
-typedef struct Config {
-  bool full_screen;
-  int window_width;
-  int window_height;
-  const char* mesh_file;
-  const char* texture_file;
-} Config;
-
 enum {
   CONFIG_MAP_MAX_KEYS = 64,
+  CONFIG_MAP_KEY_LEN = 31,
+  CONFIG_MAP_VAL_LEN = 41,
 };
 
 typedef struct ConfigMap {
-  char keys[CONFIG_MAP_MAX_KEYS][16];
-  char values[CONFIG_MAP_MAX_KEYS][96];
+  char keys[CONFIG_MAP_MAX_KEYS][CONFIG_MAP_KEY_LEN];
+  char values[CONFIG_MAP_MAX_KEYS][CONFIG_MAP_VAL_LEN];
   size_t key_count;
 } ConfigMap;
 
-void process_command_line(Config* config, int argc, char* argv[]);
+void init_config_map(ConfigMap* config_map);
+const char* config_map_value_str(const ConfigMap* config_map, const char* key, const char* default_value);
+int config_map_value_int(const ConfigMap* config_map, const char* key, int default_value);
+float config_map_value_float(const ConfigMap* config_map, const char* key, float default_value);
 
-ConfigMap* init_config_map(const char* config_file);
-void destroy_config_map(ConfigMap* config_map);
-bool config_map_value_bool(const ConfigMap* config_map, const char* key);
-int config_map_value_int(const ConfigMap* config_map, const char* key);
-float config_map_value_float(const ConfigMap* config_map, const char* key);
-const char* config_map_value_str(const ConfigMap* config_map, const char* key);
+void process_command_line(ConfigMap* config_map, int argc, char* argv[]);

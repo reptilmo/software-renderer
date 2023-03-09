@@ -9,9 +9,9 @@ INLINE uint32_t color_apply_intensity(uint32_t color, float intencity) {
   }
 
   const uint32_t a = (color & 0xFF000000) >> 24;
-  const uint32_t r = (color & 0x00FF0000) >> 16;
-  const uint32_t g = (color & 0x0000FF00) >> 8;
-  const uint32_t b = (color & 0x000000FF) >> 0;
+  uint32_t r = (color & 0x00FF0000) >> 16;
+  uint32_t g = (color & 0x0000FF00) >> 8;
+  uint32_t b = (color & 0x000000FF) >> 0;
 
   // r = (uint32_t)(((r / 255.0f) * intencity) * 255.0f);
   // g = (uint32_t)(((g / 255.0f) * intencity) * 255.0f);
