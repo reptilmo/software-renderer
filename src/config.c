@@ -48,19 +48,19 @@ void init_config_map(ConfigMap* config_map) {
 
     remove_white_space(line);
     const char* key = strtok(line, "=");
-    if (strlen(key) > CONFIG_MAP_KEY_LEN) {
+    if (strlen(key) >= CONFIG_MAP_KEY_LEN) {
       fprintf(stderr, "Skipping key [%s], too long!\n", key);
       continue;
     }
 
     const char* value = strtok(NULL, "=");
-    if (strlen(value) > CONFIG_MAP_VAL_LEN) {
+    if (strlen(value) >= CONFIG_MAP_VAL_LEN) {
       fprintf(stderr, "Config value [%s], too long!\n", value);
       continue;
     }
 
-    memcpy(config_map->keys[key_count],  key, strlen(key));
-    memcpy(config_map->values[key_count], value, strlen(value));
+    strncpy(config_map->keys[key_count],  key, strlen(key));
+    strncpy(config_map->values[key_count], value, strlen(value));
     key_count++;
   }
 
@@ -111,12 +111,12 @@ static void config_map_set(ConfigMap* config_map, const char* key, const char* v
     return;
   }
 
-  if (strlen(key) > CONFIG_MAP_KEY_LEN) {
+  if (strlen(key) >= CONFIG_MAP_KEY_LEN) {
     fprintf(stderr, "Skipping key [%s], too long!\n", key);
     return;
   }
 
-  if (strlen(value) > CONFIG_MAP_VAL_LEN) {
+  if (strlen(value) >= CONFIG_MAP_VAL_LEN) {
     fprintf(stderr, "Config value [%s], too long!\n", value);
     return;
   }
@@ -124,7 +124,7 @@ static void config_map_set(ConfigMap* config_map, const char* key, const char* v
   for (size_t i = 0; i < config_map->key_count; i++) {
     if (strncmp(config_map->keys[i], key, strlen(key)) == 0) {
       memset(config_map->values[i], 0, CONFIG_MAP_VAL_LEN);
-      memcpy(config_map->values[i], value, strlen(value));
+      strncpy(config_map->values[i], value, strlen(value));
       return;
     }
   }

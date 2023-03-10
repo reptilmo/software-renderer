@@ -71,6 +71,7 @@ Display* init_display(int width, int height, bool fullscreen) {
     return NULL;
   }
 
+  //SDL_SetWindowGrab(display->window, SDL_TRUE);
   return display;
 }
 

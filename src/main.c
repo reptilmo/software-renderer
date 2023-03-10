@@ -7,6 +7,7 @@
 #include "texture.h"
 #include "config.h"
 #include "input.h"
+#include "camera.h"
 
 void process_input(bool* running);
 void update(float delta_time);
@@ -18,8 +19,9 @@ InputHandler input;
 Display* display = NULL;
 Renderer* renderer = NULL;
 Texture* texture = NULL;
+Camera camera;
 
-bool enable_backface_culling = true;
+bool enable_backface_culling = false;
 bool enable_draw_fill = false;
 bool enable_draw_wireframe = false;
 bool enable_draw_points = false;
@@ -80,7 +82,7 @@ int main(int argc, char* argv[]) {
   //FIXME: Move initial state out of here.
   renderer_clear_color(renderer, 0xFF000000);
   renderer_draw_mode(renderer, draw_mode);
-  renderer_cull_mode(renderer, CULL_MODE_BACKFACE);
+  //renderer_cull_mode(renderer, CULL_MODE_BACKFACE);
   renderer_light_mode(renderer, light_mode);
 
   bool mesh_loaded = false;
@@ -102,8 +104,14 @@ int main(int argc, char* argv[]) {
   int previous_frame_time = 0;
   int delta_time = 0;
 
+
+  const Vec3 forward = {0.0f, 0.0f, 1.0f};
+  const Vec3 world_up = {0.0f, 1.0f, 0.0f};
+  init_camera(&camera, camera_postion, forward, world_up);
+
   while (running) {
-    process_input(&running);
+    SDL_PumpEvents();
+    running = !input_handler_update(&input);
 
     delta_time = SDL_GetTicks() - previous_frame_time;
     previous_frame_time = SDL_GetTicks();
@@ -188,11 +196,11 @@ void process_input(bool* running) {
 void update(float dt) {
   ASSERT(mesh != NULL);
 
-  mesh_rotation.x += 0.01f * dt;
-  mesh_rotation.y += 0.01f * dt;
-  mesh_rotation.z += 0.01f * dt;
+  //mesh_rotation.x += 0.01f * dt;
+  //mesh_rotation.y += 0.01f * dt;
+  //mesh_rotation.z += 0.01f * dt;
 
-  camera_postion.z += sinf(mesh_rotation.x) * 0.04f;
+ // camera_postion.z += sinf(mesh_rotation.x) * 0.04f;
 
   Mat4 rotate = mat4_mul(mat4_make_rotate_z(mesh_rotation.z),
                          mat4_mul(mat4_make_rotate_y(mesh_rotation.y),
@@ -200,10 +208,8 @@ void update(float dt) {
 
   Mat4 translate = mat4_make_translate(0.0f, 0.0f, 0.0f);
 
-  const Vec3 camera_target = {0.0f, 0.0f, 5.0f};
-  const Vec3 world_up = {0.0f, 1.0f, 0.0f};
-
-  Mat4 view = mat4_make_look_at(&camera_postion, &camera_target, &world_up);
+  camera_update(&camera, &input, dt);
+  Mat4 view = camera_view_matrix(&camera);
 
   Mat4 transform = mat4_mul(view, mat4_mul(translate, rotate));
 
@@ -225,6 +231,8 @@ void update(float dt) {
     Vec3 normal = mesh->normals[i];
     //FIXME: I think there is a problem here.
     Vec4 transformed = mat4_mul_vec4(rotate, vec3_xyzw(&normal));
+   //  transformed = mat4_mul_vec4(view, transformed);
+
     normal = vec4_xyz(&transformed);
 
     dyn_array_push_back(transformed_mesh_normals, normal);

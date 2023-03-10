@@ -139,7 +139,7 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
 
     float light_intensity = 1.0f;
     if (renderer->light_mode > LIGHT_MODE_NONE) {
-      light_intensity = -1.0f * vec3_dot(&renderer->light_direction, &triangle_normal);
+      //light_intensity = -1.0f * vec3_dot(&renderer->light_direction, &triangle_normal);
     }
 
     Polygon triangle;

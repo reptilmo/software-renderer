@@ -24,6 +24,8 @@ add_executable(renderer
     clipping.c
     frustum.h
     frustum.c
+    camera.h
+    camera.c
     renderer.h
     renderer.c
     main.c

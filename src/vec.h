@@ -158,13 +158,20 @@ INLINE float vec3_dot(const Vec3* a, const Vec3* b) {
   return a->x * b->x + a->y * b->y + a->z * b->z;
 }
 
-INLINE Vec3 vec3_normalize(const Vec3* v) {
+INLINE Vec3 vec3_normalized(const Vec3* v) {
   const float factor = 1.0f / vec3_len(v);
   return (Vec3){
       .x = v->x * factor,
       .y = v->y * factor,
       .z = v->z * factor,
   };
+}
+
+INLINE void vec3_normalize(Vec3* v) {
+  const float factor = 1.0f / vec3_len(v);
+  v->x *= factor;
+  v->y *= factor;
+  v->z *= factor;
 }
 
 INLINE Vec3 rotate_around_x(const Vec3* v, float a) {

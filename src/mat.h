@@ -104,9 +104,9 @@ INLINE Mat4 mat4_make_rotate_z(float a) {
 INLINE Mat4 mat4_make_look_at(const Vec3* position, const Vec3* target, const Vec3* world_up) {
   // Left-handed
   Vec3 forward = vec3_sub(target, position);
-  forward = vec3_normalize(&forward);
+  vec3_normalize(&forward);
   Vec3 right = vec3_cross(world_up, &forward);
-  right = vec3_normalize(&right);
+  vec3_normalize(&right);
   Vec3 up = vec3_cross(&forward, &right);
 
   return (Mat4){{
