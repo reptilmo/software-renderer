@@ -10,8 +10,8 @@ Renderer* init_renderer(Display* display) {
     Renderer* renderer = (Renderer*)malloc(sizeof(Renderer));
     if (renderer != NULL) {
       const float fov_over_two = 60.0f * 0.5f;
-      const float near_plane = 0.0f;
-      const float far_plane = 99.0f;
+      const float near_plane = 1.0f;
+      const float far_plane = 1000.0f;
 
       renderer->display = display;
       renderer->renderable_triangles = NULL;
@@ -130,7 +130,7 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
     const Vec3 triangle_normal = normals[face.normal];
     const Vec3 triangle_vertex_a = vertices[face.a];
 
-    if (renderer->cull_mode == CULL_MODE_BACKFACE) {
+    if (renderer->cull_mode == CULL_MODE_BACK_FACE) {
       const Vec3 camera_direction = vec3_sub(&renderer->camera_position, &triangle_vertex_a);
       if (vec3_dot(&camera_direction, &triangle_normal) < 0) {
         continue;
@@ -174,8 +174,7 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
 
     for (int vertex_idx = 0; vertex_idx < polygon->vertex_count; vertex_idx++) {
       polygon->vertices[vertex_idx] = perspective_divide(&polygon->vertices[vertex_idx]);
-      // Scale and translate from NDC space to viewport.
-      // FIXME: Use a matrix.
+      // Scale and translate from NDC space to screen space.
       polygon->vertices[vertex_idx].x *= renderer->view_half_width;
       polygon->vertices[vertex_idx].y *= -renderer->view_half_height;
       polygon->vertices[vertex_idx].x += renderer->view_half_width - 0.5f;

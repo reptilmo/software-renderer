@@ -1,8 +1,9 @@
 // input.h
 #pragma once
 
-#include "config.h"
 #include "system.h"
+#include "config.h"
+#include "display.h"
 
 typedef struct InputHandler {
   bool keyboard_keys[512];
@@ -22,11 +23,10 @@ typedef struct InputHandler {
   float mouse_sensitivity;
   int delta_x;
   int delta_y;
-
 } InputHandler;
 
 void init_input_handler(InputHandler* input_handler, const ConfigMap* config_map);
-bool input_handler_update(InputHandler* input_handler);
+bool input_handler_update(InputHandler* input_handler, Display* display);
 
 static inline bool move_forward(const InputHandler* input_handler) {
   return input_handler->keyboard_keys[input_handler->key_move_forward];

@@ -10,7 +10,8 @@
 
 typedef enum {
   CULL_MODE_NONE = 0,
-  CULL_MODE_BACKFACE = 1,
+  CULL_MODE_BACK_FACE = 1,
+  CULL_MODE_FRONT_FACE = 2,
 } CullMode;
 
 typedef enum {

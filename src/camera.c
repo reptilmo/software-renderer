@@ -18,7 +18,7 @@ void camera_update(Camera* camera, const InputHandler* input, float delta_time) 
   const float dy = mouse_delta_y(input) * delta_time;
   const float dx = mouse_delta_x(input) * delta_time;
 
-  // camera->vertical_angle += dy;
+  camera->vertical_angle += dy;
   camera->horizontal_angle += dx;
 
   printf("-> %d %d - %f %f\n", input->delta_x, input->delta_y, camera->horizontal_angle, camera->vertical_angle);
@@ -50,14 +50,14 @@ void camera_update(Camera* camera, const InputHandler* input, float delta_time) 
     camera->position = vec3_sub(&camera->position, &scaled_forward);
   }
 
-  if (move_left(input)) {
-    Vec3 direction = vec3_cross(&camera->world_up, &camera->forward);
+  if (move_right(input)) {
+    Vec3 direction = vec3_cross(&camera->forward, &camera->world_up);
     direction = vec3_mul(&direction, move_factor);
     camera->position = vec3_add(&camera->position, &direction);
   }
 
-  if (move_right(input)) {
-    Vec3 direction = vec3_cross(&camera->world_up, &camera->forward);
+  if (move_left(input)) {
+    Vec3 direction = vec3_cross(&camera->forward, &camera->world_up);
     direction = vec3_mul(&direction, move_factor);
     camera->position = vec3_sub(&camera->position, &direction);
   }

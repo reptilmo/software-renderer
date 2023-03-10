@@ -101,8 +101,8 @@ int main(int argc, char* argv[]) {
 
 
   bool running = mesh_loaded && texture_loaded;
-  int previous_frame_time = 0;
-  int delta_time = 0;
+  uint64_t previous_frame_time = 0;
+  uint64_t delta_time = 0;
 
 
   const Vec3 forward = {0.0f, 0.0f, 1.0f};
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
 
   while (running) {
     SDL_PumpEvents();
-    running = !input_handler_update(&input);
+    running = !input_handler_update(&input, display);
 
     delta_time = SDL_GetTicks() - previous_frame_time;
     previous_frame_time = SDL_GetTicks();
@@ -148,7 +148,7 @@ void process_input(bool* running) {
         enable_backface_culling = true;
       }
       renderer_cull_mode(renderer,
-                         enable_backface_culling ? CULL_MODE_BACKFACE : CULL_MODE_NONE);
+                         enable_backface_culling ? CULL_MODE_BACK_FACE : CULL_MODE_NONE);
     } else if (event.key.keysym.scancode == SDL_SCANCODE_1) {
       if (enable_draw_fill) {
         enable_draw_fill = false;
@@ -200,8 +200,6 @@ void update(float dt) {
   //mesh_rotation.y += 0.01f * dt;
   //mesh_rotation.z += 0.01f * dt;
 
- // camera_postion.z += sinf(mesh_rotation.x) * 0.04f;
-
   Mat4 rotate = mat4_mul(mat4_make_rotate_z(mesh_rotation.z),
                          mat4_mul(mat4_make_rotate_y(mesh_rotation.y),
                                   mat4_make_rotate_x(mesh_rotation.x)));
@@ -231,7 +229,7 @@ void update(float dt) {
     Vec3 normal = mesh->normals[i];
     //FIXME: I think there is a problem here.
     Vec4 transformed = mat4_mul_vec4(rotate, vec3_xyzw(&normal));
-   //  transformed = mat4_mul_vec4(view, transformed);
+    // transformed = mat4_mul_vec4(view, transformed);
 
     normal = vec4_xyz(&transformed);
 

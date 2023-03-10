@@ -19,7 +19,7 @@ void init_input_handler(InputHandler* input_handler, const ConfigMap* config_map
   SDL_SetRelativeMouseMode(SDL_TRUE);
 }
 
-bool input_handler_update(InputHandler* input_handler) {
+bool input_handler_update(InputHandler* input_handler, Display* display) {
   int key_count = 0;
   const uint8_t* key_state = SDL_GetKeyboardState(&key_count);
 
@@ -28,10 +28,11 @@ bool input_handler_update(InputHandler* input_handler) {
   }
 
   for (int k = 0; k < key_count; ++k) {
-    input_handler->keyboard_keys[k] = (int)key_state[k];
+    input_handler->keyboard_keys[k] = (key_state[k] != 0) ? true : false;
   }
 
-  const uint32_t button_state = SDL_GetRelativeMouseState(&input_handler->delta_x, &input_handler->delta_y);
+  int x, y;
+  const uint32_t button_state = SDL_GetRelativeMouseState(&x, &y);
 
   if (button_state & SDL_BUTTON(1)) {
     input_handler->mouse_buttons[0] = true;
@@ -49,6 +50,16 @@ bool input_handler_update(InputHandler* input_handler) {
     input_handler->mouse_buttons[2] = true;
   } else {
     input_handler->mouse_buttons[2] = false;
+  }
+
+  if (input_handler->mouse_buttons[input_handler->mouse_secondary]) {
+    input_handler->delta_x = x;
+    input_handler->delta_y = y;
+
+    SDL_WarpMouseInWindow(display->window, display->width >> 1, display->height >> 1);
+  } else {
+    input_handler->delta_x = 0;
+    input_handler->delta_y = 0;
   }
 
   return false;
