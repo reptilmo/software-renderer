@@ -3,7 +3,7 @@
 
 #include "system.h"
 
-INLINE uint32_t color_apply_intensity(uint32_t color, float intencity) {
+inline uint32_t color_apply_intensity(uint32_t color, float intencity) {
   if (intencity < 0.0f) {
     intencity = 0.0f;
   }

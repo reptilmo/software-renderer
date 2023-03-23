@@ -27,3 +27,4 @@ void present_depth_buffer(Display* display);
 void draw_grid(Display* display, int step, uint32_t color);
 void draw_rect(Display* display, int left, int top, int width, int height, uint32_t color);
 void draw_line_dda(Display* display, int x0, int y0, int x1, int y1, uint32_t color);
+void draw_axis(Display* display, uint32_t color);

@@ -9,11 +9,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include <SDL.h>
 
-#define INLINE inline
-#define RADIANS(degrees) ((degrees)*0.01745329f)
+#define RADIANS(degrees) ((degrees) * ((float)M_PI / 180.0f))
 
 #ifndef RELEASE
 #define ASSERT(condition)                                                                              \
@@ -27,19 +27,19 @@
 #define ASSERT(condition) (condition)
 #endif
 
-INLINE void swap_int(int* a, int* b) {
+inline void swap_int(int* a, int* b) {
   int tmp = *a;
   *a = *b;
   *b = tmp;
 }
 
-INLINE void swap_float(float* a, float* b) {
+inline void swap_float(float* a, float* b) {
   float tmp = *a;
   *a = *b;
   *b = tmp;
 }
 
-INLINE bool almost_equal(float a, float b, float tolerance) {
+inline bool almost_equal(float a, float b, float tolerance) {
   const float diff = fabsf(a - b);
 
   a = fabsf(a);

@@ -9,19 +9,21 @@ Renderer* init_renderer(Display* display) {
   if (display != NULL) {
     Renderer* renderer = (Renderer*)malloc(sizeof(Renderer));
     if (renderer != NULL) {
-      const float fov_over_two = 60.0f * 0.5f;
-      const float near_plane = 1.0f;
+      const float fov_over_two = 45.0f * 0.5f;
+      const float near_plane = .01f;
       const float far_plane = 1000.0f;
 
       renderer->display = display;
+      renderer->view_half_width = display->width * 0.5f;
+      renderer->view_half_height = display->height * 0.5f;
       renderer->renderable_triangles = NULL;
       renderer->current_texture = NULL;
       renderer->camera_position.x = 0.0f;
       renderer->camera_position.y = 0.0f;
       renderer->camera_position.z = 0.0f;
       renderer->light_direction.x = 0.0f;
-      renderer->light_direction.y = 0.0f;
-      renderer->light_direction.z = 1.0f;
+      renderer->light_direction.y = 1.0f;
+      renderer->light_direction.z = 0.0f;
       renderer->clear_color = 0xFF000000;
       renderer->draw_mode = DRAW_MODE_TRIANGLE_FILL;
       renderer->cull_mode = CULL_MODE_NONE;
@@ -31,9 +33,6 @@ Renderer* init_renderer(Display* display) {
           (float)renderer->display->width,
           (float)renderer->display->height,
           fov_over_two, near_plane, far_plane);
-
-      renderer->view_half_width = display->width * 0.5f;
-      renderer->view_half_height = display->height * 0.5f;
 
       return renderer;
     }
@@ -103,6 +102,7 @@ void renderer_begin_frame(Renderer* renderer) {
   clear_depth_buffer(renderer->display, 0.0f);
   clear_pixel_buffer(renderer->display, renderer->clear_color);
   //draw_grid(renderer->display, 10, 0xFF555555);
+  draw_axis(renderer->display, 0xFF0000FF);
 }
 
 void renderer_end_frame(Renderer* renderer) {
@@ -135,11 +135,17 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
       if (vec3_dot(&camera_direction, &triangle_normal) < 0) {
         continue;
       }
+    } else if (renderer->cull_mode == CULL_MODE_BACK_FACE) {
+      const Vec3 camera_direction = vec3_sub(&renderer->camera_position, &triangle_vertex_a);
+      if (vec3_dot(&camera_direction, &triangle_normal) > 0) {
+        continue;
+      }
     }
 
+    // FIXME:
     float light_intensity = 1.0f;
     if (renderer->light_mode > LIGHT_MODE_NONE) {
-      //light_intensity = -1.0f * vec3_dot(&renderer->light_direction, &triangle_normal);
+      light_intensity =  -1.0f * vec3_dot(&renderer->light_direction, &triangle_normal);
     }
 
     Polygon triangle;
@@ -159,12 +165,10 @@ void renderer_begin_triangles(Renderer* renderer, TriangleFace* faces, size_t nu
   for (size_t i = 0; i < renderable_count; i++) {
     Polygon* polygon = &renderer->renderable_triangles[i];
     ASSERT(polygon->vertex_count == 3);
-    polygon->vertices[0] = mat4_mul_vec4(renderer->projection_matrix, polygon->vertices[0]);
-    polygon->vertices[1] = mat4_mul_vec4(renderer->projection_matrix, polygon->vertices[1]);
-    polygon->vertices[2] = mat4_mul_vec4(renderer->projection_matrix, polygon->vertices[2]);
-
-    axis_side_clip_polygon(W_AXIS, 1.0f, polygon);
-    axis_side_clip_polygon(W_AXIS, -1.0f, polygon);
+    polygon->vertices[0] = mat4_mul_vec4(&renderer->projection_matrix, &polygon->vertices[0]);
+    polygon->vertices[1] = mat4_mul_vec4(&renderer->projection_matrix, &polygon->vertices[1]);
+    polygon->vertices[2] = mat4_mul_vec4(&renderer->projection_matrix, &polygon->vertices[2]);
+    
     axis_side_clip_polygon(X_AXIS, 1.0f, polygon);
     axis_side_clip_polygon(X_AXIS, -1.0f, polygon);
     axis_side_clip_polygon(Y_AXIS, 1.0f, polygon);

@@ -199,6 +199,13 @@ void draw_line_dda(Display* display, int x0, int y0, int x1, int y1, uint32_t co
   }
 }
 
+void draw_axis(Display* display, uint32_t color) {
+
+  draw_line_dda(display, display->width >> 1, 0, display->width >> 1, display->height, color);
+
+  draw_line_dda(display, 0, display->height >> 1, display->width, display->height >> 1, color);
+}
+
 #if 0
 static void draw_scanline(Display* display, int x0, int x1, int y, uint32_t color) {
   if (y < 0 || y >= display->height) {

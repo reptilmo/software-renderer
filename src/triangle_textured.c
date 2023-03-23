@@ -128,7 +128,7 @@ static inline void draw_scan_line(Display* display, const Gradients* gradients, 
     }
     
     if (one_over_w > *(depth_bits + x)) {
-      *(pixel_bits + x) = color_apply_intensity(*(texture_bits + (texture->width * iv) + iu), intensity);
+      *(pixel_bits + x) = *(texture_bits + (texture->width * iv) + iu); //color_apply_intensity(*(texture_bits + (texture->width * iv) + iu), intensity);
       *(depth_bits + x) = one_over_w;
     }
 
